@@ -1,0 +1,32 @@
+.story-info {
+  .story-img {
+    width: 100%;
+  }
+}
+.read-action {
+  a {
+    margin-right: 4px;
+  }
+}
+.star-icon {
+  height: 40px;
+  width: 40px;
+}
+.follower {
+  span {
+    font-size: 1.4rem;
+  }
+}
+.story-info.dark {
+  .follower {
+    a {
+      color: var(--orange--color);
+      &:hover {
+        color: var(--red--color);
+      }
+    }
+    h3 {
+      color: var(--orange--color);
+    }
+  }
+}
