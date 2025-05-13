@@ -4,18 +4,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBook, faSignOut } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 import classNames from 'classnames/bind';
-
 import styles from './UserMenu.module.scss';
 
 const cx = classNames.bind(styles);
 
-const UserMenu = ({ handleClickUserMenu, handleLogout, textColor }) => {
+const UserMenu = ({ onClose, handleLogout, textColor }) => {
   return (
     <ul className={cx('user-menu')}>
       <li>
         <Link
           to="/secure/dashboard"
-          onClick={handleClickUserMenu}
+          onClick={onClose}
           style={{ color: textColor }}
         >
           <FontAwesomeIcon icon={faUser} />
@@ -24,8 +23,8 @@ const UserMenu = ({ handleClickUserMenu, handleLogout, textColor }) => {
       </li>
       <li>
         <Link
-          to="/secure/comicFollowed"
-          onClick={handleClickUserMenu}
+          to="/secure/followed-comic"
+          onClick={onClose}
           style={{ color: textColor }}
         >
           <FontAwesomeIcon icon={faBook} />
@@ -43,7 +42,7 @@ const UserMenu = ({ handleClickUserMenu, handleLogout, textColor }) => {
 };
 
 UserMenu.propTypes = {
-  handleClickUserMenu: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
   handleLogout: PropTypes.func.isRequired,
   textColor: PropTypes.string,
 };

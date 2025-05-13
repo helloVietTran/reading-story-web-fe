@@ -1,46 +1,55 @@
 import { Link } from 'react-router-dom';
-import classNames from 'classnames/bind';
 import { useQuery } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
 
 import ListFrame from '@/components/List/ListFrame/ListFrame';
-import PrimaryListItem from '@/components/List/PrimaryListItem/PrimaryListItem';
+import ListItem from '@/components/List/ListItem/ListItem';
 import TextRank from '@/components/TextRank/TextRank';
 
-import styles from './TopStory.module.scss';
-import useTheme from '@/hooks/useTheme';
-import createQueryFn from '@/utils/createQueryFn';
 import { getTopStories } from '@/api/storyApi';
+import { queryKey } from '@/config/queryKey';
 
-const cx = classNames.bind(styles);
 function TopStory() {
-  const themeClassName = useTheme(cx);
-  const { data } = useQuery({
-    queryKey: ['topStories'],
-    queryFn: createQueryFn(getTopStories),
-    onError: (error) => {
-      console.error('Error fetching stories:', error);
-    },
+  const darkTheme = useSelector((state) => state.theme.darkTheme);
+
+  const topStoriesQuery = useQuery({
+    queryKey: [queryKey.TOP_STORIES],
+    queryFn: getTopStories,
+    staleTime: 5 * 60 * 1000,
   });
 
   return (
     <ListFrame>
-      <div className={cx('topStory-header', themeClassName)}>
-        <Link className={cx('active')} to="/">
+      <div
+        className={`top-story-header ${darkTheme ? 'dark text-gray-200' : ''}`}
+      >
+        <Link
+          to="/"
+          className={`top-tab top-tab-active top-tab-dark top-tab-dark-active`}
+        >
           Top tháng
         </Link>
-        <Link to="/find-story?sort=11&status=-1">Top tuần</Link>
-        <Link to="/find-story?sort=10&status=-1">Top ngày</Link>
+        <Link
+          to="/find-story?sort=11&status=-1"
+          className={`top-tab top-tab-hover top-tab-dark top-tab-dark-hover`}
+        >
+          Top tuần
+        </Link>
+        <Link
+          to="/find-story?sort=10&status=-1"
+          className={`top-tab top-tab-hover top-tab-dark top-tab-dark-hover`}
+        >
+          Top ngày
+        </Link>
       </div>
-      {data &&
-        data.map((story, index) => {
-          return (
-            <div className={cx('topStory-item')} key={story.id}>
-              <TextRank index={index} />
 
-              <PrimaryListItem hasViewCount data={story} />
-            </div>
-          );
-        })}
+      {topStoriesQuery.data?.length > 0 &&
+        topStoriesQuery.data.map((story, index) => (
+          <div className="relative overflow-hidden capitalize" key={story.id}>
+            <TextRank index={index} />
+            <ListItem hasViewCount data={story} />
+          </div>
+        ))}
     </ListFrame>
   );
 }

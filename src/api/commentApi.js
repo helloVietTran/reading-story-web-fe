@@ -1,9 +1,9 @@
-import axiosInstance from '../config/axiosConfig';
-
+import axiosInstance from '@/config/axiosConfig';
 const commentPrefix = '/comments';
 
 export const getNewComment = async () => {
   const { data } = await axiosInstance.get(`${commentPrefix}/new-comments`);
+
   return data.result;
 };
 
@@ -41,4 +41,15 @@ export const getCommentsByChapterId = async (chapterId, page, size = 32) => {
 
 export const postComment = async (data) => {
   await axiosInstance.post(`${commentPrefix}`, data);
+};
+
+export const getCommentsByUserId = async (userId, page = 1, size = 10) => {
+  const { data } = await axiosInstance.get(`${commentPrefix}/users/${userId}`, {
+    params: {
+      page,
+      size,
+    },
+  });
+
+  return data.result;
 };

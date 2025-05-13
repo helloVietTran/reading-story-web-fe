@@ -1,25 +1,21 @@
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/NavBar/NavBar';
+import Navbar from '@/components/Navbar/Navbar';
 import Main from '@/components/Main/Main';
 import Footer from '@/components/Footer/Footer';
-import FollowedComicList from '@/components/FollowedComicList/FollowedComicList';
+import FollowedComicList from '@/components/FollowedStoryList/FollowedStoryList';
 import HistoryList from '@/components/HistoryList/HistoryList';
 import TopUser from '@/components/TopUser/TopUser';
 import NewComment from '@/components/NewComment/NewComment';
 import TopStory from '@/components/TopStory/TopStory';
-import NavBarModal from '@/components/Modal/NavBarModal/NavBarModal';
-
-import createQueryFn from '@/utils/createQueryFn';
+import SplashScreen from '@/components/SplashScreen/SplashScreen';
 import { getStories } from '@/api/storyApi';
+import { queryKey } from '@/config/queryKey';
 
 function Home() {
-  const isOpen = useSelector((state) => state.navbar.isOpen);
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -27,40 +23,30 @@ function Home() {
   const [searchParams] = useSearchParams();
   const page = searchParams.get('page') || 1;
 
-  const storiesQuery = useQuery({
-    queryKey: ['stories', page],
-    queryFn: createQueryFn(getStories),
-    onError: (error) => {
-      console.error('Error fetching stories:', error);
-    },
+  const { data, isLoading } = useQuery({
+    queryKey: [queryKey.STORIES, page],
+    queryFn: () => getStories(page),
   });
 
   return (
     <>
+      {isLoading && <SplashScreen />}
       <Head />
-      <NavBar />
-      {isOpen ? (
-        <NavBarModal />
-      ) : (
-        <>
-          {storiesQuery?.data && (
-            <>
-              <Main
-                title="Truyện mới cập nhật"
-                isBreadcrumbHidden={true}
-                data={storiesQuery.data}
-              >
-                <FollowedComicList />
-                <HistoryList />
-                <TopStory />
-                <TopUser />
-                <NewComment />
-              </Main>
-              <Footer />
-            </>
-          )}
-        </>
-      )}
+      <Navbar />
+      <Main
+        title="Truyện mới cập nhật"
+        isBreadcrumbHidden={true}
+        data={data?.result}
+      >
+        <div className="flex flex-col gap-4 !mt-4">
+          <FollowedComicList />
+          <HistoryList />
+          <TopStory />
+          <TopUser />
+          <NewComment />
+        </div>
+      </Main>
+      <Footer />
     </>
   );
 }

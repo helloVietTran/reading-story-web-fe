@@ -1,27 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
-
-import styles from './PostHeading.module.scss';
-import useTheme from '@/hooks/useTheme';
-
-const cx = classNames.bind(styles);
 
 const PostHeading = ({ title, size, top, bottom, isRequired }) => {
-  const themeClassName = useTheme(cx);
   return (
     <h2
-      className={cx('post-heading', themeClassName)}
+      className="font-normal border-l-[3px] border-[#ee2c74] pl-[10px] leading-[1.5] min-h-[27px]"
       style={{
-        marginBottom: bottom + 'px',
-        marginTop: top + 'px',
-        fontSize: size + 'rem',
+        marginBottom: `${bottom}px`,
+        marginTop: `${top}px`,
+        fontSize: `${size}rem`,
       }}
     >
       {title}
       {isRequired && (
-        <span>
-          (<span>*</span>) bắt buộc
+        <span className="text-[1.3rem] italic ml-1">
+          (<span className="text-red-500">*</span>) bắt buộc
         </span>
       )}
     </h2>

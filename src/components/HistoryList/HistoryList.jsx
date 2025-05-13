@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
-import ListHeading from '../Heading/ListHeading/ListHeading';
-import ListFrame from '../List/ListFrame/ListFrame';
-import PrimaryListItem from '../List/PrimaryListItem/PrimaryListItem';
+import ListFrame from '@/components/List/ListFrame/ListFrame';
+import ListHeading from '@/components/Heading/ListHeading/ListHeading';
+import ListItem from '@/components/List/ListItem/ListItem';
 
 import getReadingHistoriesFromLocal from '@/utils/getReadingHistoryFromLocal';
 import deleteReadingHistoryFromLocal from '@/utils/deleteReadingHistoryFromLocal';
@@ -25,7 +25,7 @@ function HistoryList() {
       {localReadingHistories.length > 0 ? (
         localReadingHistories.map((story) => {
           return (
-            <PrimaryListItem
+            <ListItem
               data={story}
               hasDeleteBtn
               handleDeleteReadingHistory={handleDelete}
@@ -34,7 +34,7 @@ function HistoryList() {
           );
         })
       ) : (
-        <p>Bạn không có lịch sử đọc truyện</p>
+        <p>Bạn không có lịch sử đọc truyện trên thiết bị này</p>
       )}
     </ListFrame>
   );

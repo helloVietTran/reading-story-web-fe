@@ -1,26 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useSelector } from 'react-redux';
+import classNames from 'classnames';
 
-import styles from './PrimaryHeading.module.scss';
-import useTheme from '@/hooks/useTheme';
+const PrimaryHeading = ({ title, icon, className }) => {
+  const darkTheme = useSelector((state) => state.theme.darkTheme);
 
-const cx = classNames.bind(styles);
+  const combinedClass = classNames('flex gap-2 items-center', className, {
+    dark: darkTheme,
+  });
 
-const PrimaryHeading = ({ title, size, icon, top, bottom }) => {
-  const themeClassName = useTheme(cx);
   return (
-    <div
-      className={cx('primary-heading', themeClassName)}
-      style={{
-        marginBottom: bottom + 'px',
-        marginTop: top + 'px',
-        fontSize: size + 'rem',
-      }}
-    >
-      <h3 style={{ fontSize: size + 'rem' }}>{title}</h3>
-      {icon && <FontAwesomeIcon icon={icon} />}
+    <div className={combinedClass}>
+      <h3 className="text-xl font-medium text-light-blue-heading dark:!text-orange-bright">
+        {title}
+      </h3>
+      {icon && (
+        <FontAwesomeIcon
+          icon={icon}
+          className="text-light-blue-heading dark:!text-orange-bright"
+        />
+      )}
     </div>
   );
 };
@@ -28,9 +29,7 @@ const PrimaryHeading = ({ title, size, icon, top, bottom }) => {
 PrimaryHeading.propTypes = {
   title: PropTypes.string.isRequired,
   icon: PropTypes.object,
-  size: PropTypes.number.isRequired,
-  top: PropTypes.number,
-  bottom: PropTypes.number,
+  className: PropTypes.string,
 };
 
 export default PrimaryHeading;

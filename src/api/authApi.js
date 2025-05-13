@@ -1,5 +1,4 @@
-import axiosInstance from '../config/axiosConfig';
-import Cookies from 'js-cookie';
+import axiosInstance from '@/config/axiosConfig';
 
 const authPrefix = '/auth';
 
@@ -9,7 +8,7 @@ export const login = async (credentialsData) => {
     credentialsData
   );
 
-  return data.result;
+  return data;
 };
 
 export const logout = async (token) => {
@@ -22,8 +21,5 @@ export const refresh = async (refreshToken) => {
     refreshToken
   );
 
-  Cookies.set('reading_web_jwt', data.accessToken, { expires: 1 / 24 });
-  Cookies.set('reading_web_refreshToken', data.refreshToken, { expires: 1 });
-
-  return data;
+  return data.result;
 };

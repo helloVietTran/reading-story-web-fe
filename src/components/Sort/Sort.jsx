@@ -1,30 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import queryString from 'query-string';
-import classNames from 'classnames/bind';
 import { faEye, faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import { faList } from '@fortawesome/free-solid-svg-icons';
-
-import Grid from '../Layout/Grid/Grid';
-import Row from '@/components/Layout/Row/Row';
-import Col from '@/components/Layout/Col/Col';
-import FilterButton from '@/components/Button/FilterButton/FilterButton';
-import GenreSelect from '../GenreSelect/GenreSelect';
-import StoryCard from '../StoryCard/StoryCard';
-
-import { options } from '@/config/filter';
-import useTheme from '@/hooks/useTheme';
-import styles from './Sort.module.scss';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-const cx = classNames.bind(styles);
-function Sort({ data }) {
+import FilterButton from '@/components/Button/FilterButton/FilterButton';
+import GenreSelect from '@/components/GenreSelect/GenreSelect';
+import StoryCard from '@/components/StoryCard/StoryCard';
+import { options } from '@/config/filter';
+import StoryCardSkeleton from '../StoryCardSkeleton/StoryCardSkeleton';
+
+function Sort({ data, isLoading }) {
+  const { darkTheme } = useSelector((state) => state.theme);
   const [activeNavLink, setActiveNavLink] = useState('');
 
   const [searchParams] = useSearchParams({ status: '-1', sort: '1' });
   const { genre } = useParams();
   const location = useLocation();
-  const themeClassName = useTheme(cx);
 
   const genreFeild = options.find((option) => option.path.includes(genre));
 
@@ -63,24 +57,23 @@ function Sort({ data }) {
     return searchParams.get(paramName) === paramValue;
   };
   return (
-    <div className={`${cx('sort')} ${themeClassName}`}>
-      <h1>
+    <div className={darkTheme ? 'dark' : ''}>
+      <h1 className="text-2xl font-medium text-center dark:text-gray-200">
         {genreFeild === undefined ? 'Tìm truyện tranh' : 'Truyện thể loại '}
         <b>{genreFeild === undefined ? null : genreFeild.name}</b>
       </h1>
 
-      <div className={cx('hide')}>
+      <div className="genre-select-wrapper mb-2">
         <GenreSelect options={options} />
       </div>
-      <div className={cx('genre-description')}>
-        <p>
-          {genreFeild === undefined
-            ? 'Tất cả thể loại truyện tranh'
-            : genreFeild.description}
-        </p>
-      </div>
 
-      <ul className={cx('nav-tabs')}>
+      <p className="text-sm !p-2 border border-gray-300 rounded-xs dark:!text-gray-200">
+        {genreFeild === undefined
+          ? 'Tất cả thể loại truyện tranh'
+          : genreFeild.description}
+      </p>
+
+      <ul className="text-center my-2">
         <FilterButton
           label="Tất cả"
           pathName={location.pathname}
@@ -103,14 +96,17 @@ function Sort({ data }) {
           name="item 3"
         />
       </ul>
-      <div className={cx('sort-by-row')}>
-        <Grid>
-          <Row>
-            <Col sizeLg={3}>
-              <span>Sắp xếp theo:</span>
-            </Col>
-            <Col sizeLg={9}>
-              <ul className={cx('sort-list')}>
+      <div>
+        <div className="flex flex-col gap-4">
+          {/* Row: Label + Filter buttons */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-2">
+            <div className="w-full lg:w-1/4">
+              <span className="font-medium dark:text-gray-200">
+                Sắp xếp theo:
+              </span>
+            </div>
+            <div className="w-full lg:w-3/4">
+              <ul className="flex flex-wrap gap-1">
                 <FilterButton
                   pathName={location.pathname}
                   label="Ngày cập nhật"
@@ -164,7 +160,6 @@ function Sort({ data }) {
                   orangeActive={isActive('sort', '12')}
                   icon={faEye}
                 />
-
                 <FilterButton
                   pathName={location.pathname}
                   label="Theo dõi"
@@ -199,23 +194,24 @@ function Sort({ data }) {
                   icon={faList}
                 />
               </ul>
-            </Col>
-            {data &&
-              data.map((item) => {
-                return (
-                  <Col sizeLg={3} sizeMd={4} sizeXs={6} key={item.id}>
-                    <StoryCard data={item} />
-                  </Col>
-                );
-              })}
-          </Row>
-        </Grid>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {isLoading || !data
+              ? Array.from({ length: 4 }).map((_, idx) => (
+                  <StoryCardSkeleton key={idx} />
+                ))
+              : data.map((item) => <StoryCard key={item.id} data={item} />)}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 Sort.propTypes = {
-  data: PropTypes.array.isRequired,
+  data: PropTypes.array,
+  isLoading: PropTypes.bool,
 };
 
 export default Sort;

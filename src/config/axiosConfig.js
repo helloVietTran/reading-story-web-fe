@@ -1,8 +1,7 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import { envConstant } from './envConstant';
 
-const baseUrl =
-  import.meta.env.VITE_BACKEND_URL + import.meta.env.VITE_BACKEND_PREFIX;
+const baseUrl = envConstant.baseUrl;
 
 const axiosInstance = axios.create({
   baseURL: baseUrl,
@@ -14,7 +13,8 @@ let refreshPromise = null;
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('reading_web_jwt');
+    const token = localStorage.getItem(envConstant.tokenName);
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -23,7 +23,6 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Xử lý response errors (đặc biệt là 401 để refresh token)
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -38,28 +37,25 @@ axiosInstance.interceptors.response.use(
         isRefreshing = true;
 
         try {
-          const refreshToken = Cookies.get('reading_web_refresh_token');
+          const refreshToken = localStorage.getItem(
+            envConstant.refreshTokenName
+          );
           if (!refreshToken) {
             throw new Error('Refresh token not found');
           }
 
-          // Gọi API refresh token
           const { data } = await axios.post(`${baseUrl}/auth/refresh`, {
             refreshToken,
           });
 
           const { accessToken } = data;
 
-          // save new token
-          Cookies.set('reading_web_jwt', accessToken, { expires: 1 / 24 });
-          Cookies.set('reading_web_refresh_token', refreshToken, {
-            expires: 1,
-          });
+          localStorage.setItem(envConstant.tokenName, accessToken);
+          localStorage.setItem(envConstant.refreshTokenName, refreshToken);
 
           isRefreshing = false;
           refreshPromise = null;
 
-          // retry request with new token
           originalRequest._retry = true;
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return axiosInstance(originalRequest);
@@ -67,12 +63,16 @@ axiosInstance.interceptors.response.use(
           console.error('Refresh token failed. Redirecting to login.');
           isRefreshing = false;
           refreshPromise = null;
+
+          localStorage.removeItem(envConstant.tokenName);
+          localStorage.removeItem(envConstant.refreshTokenName);
+
           window.location.href = '/login';
           return Promise.reject(err);
         }
       }
 
-      // wait for new token then retry
+      // Đợi refresh token hoàn tất rồi thử lại request
       if (!refreshPromise) {
         refreshPromise = new Promise((resolve) => {
           const interval = setInterval(() => {
@@ -85,9 +85,11 @@ axiosInstance.interceptors.response.use(
       }
 
       await refreshPromise;
-      const newToken = Cookies.get('reading_web_jwt');
+      const newToken = localStorage.getItem(envConstant.tokenName);
+
       originalRequest._retry = true;
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
       return axiosInstance(originalRequest);
     }
 

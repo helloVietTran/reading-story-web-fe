@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-
 import Image from '@/components/Image/Image';
 
 const ChapterImageList = ({ data }) => {

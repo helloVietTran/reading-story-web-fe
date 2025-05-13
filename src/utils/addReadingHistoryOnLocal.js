@@ -1,18 +1,18 @@
-// id, slug, imgSrc, chaptersRead[], updatedAt, newestChapter, name, viewCount
+import { envConstant } from '@/config/envConstant';
 
+// story structure:  id, slug, imgSrc, chaptersRead[], updatedAt, newestChapter, name, viewCount
 function addReadingHistoryOnLocal(story, chapter) {
   let localReadingHistories =
-    JSON.parse(localStorage.getItem('local_reading_histories')) || [];
+    JSON.parse(localStorage.getItem(envConstant.readingHistoryOnLocal)) || [];
 
   let existingIndex = localReadingHistories.findIndex(
     (item) => item.id === story.id
   );
   if (existingIndex !== -1) {
-    // tìm thấy
     story.chaptersRead = localReadingHistories[existingIndex].chaptersRead;
 
     localReadingHistories[existingIndex] = story;
-    // kiểm tra đã đọc chapter chưa, nếu chưa thì push vào
+
     if (!localReadingHistories[existingIndex].chaptersRead.includes(chapter)) {
       localReadingHistories[existingIndex].chaptersRead.push(chapter);
     }
@@ -23,7 +23,7 @@ function addReadingHistoryOnLocal(story, chapter) {
     localReadingHistories.push(story);
   }
   localStorage.setItem(
-    'local_reading_histories',
+    envConstant.readingHistoryOnLocal,
     JSON.stringify(localReadingHistories)
   );
 }

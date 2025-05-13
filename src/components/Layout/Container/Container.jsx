@@ -1,29 +1,31 @@
 import React from 'react';
-import classNames from 'classnames/bind';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-
-import styles from './Container.module.scss';
-
-const cx = classNames.bind(styles);
+import classNames from 'classnames';
 
 const Container = ({
   children,
   isBackgroundVisible,
-  shouldApplyPadding,
   backgroundColor,
-  fill,
+  shouldApplyPadding = false,
+  className,
 }) => {
   const darkTheme = useSelector((state) => state.theme.darkTheme);
-  const backGround = darkTheme ? 'dark-backGround' : 'backGround';
+
+  const containerClass = classNames(
+    'w-full md:max-w-[750px] lg:max-w-[970px] xl:max-w-[1030px] rounded-t-md',
+    {
+      'p-4': shouldApplyPadding,
+      'bg-dark-container-background': isBackgroundVisible && darkTheme,
+      'bg-container-background': isBackgroundVisible && !darkTheme,
+    },
+    className
+  );
+
   return (
     <div
-      className={`${cx('container')} 
-        ${isBackgroundVisible && cx(backGround)}
-        ${shouldApplyPadding && cx('pad-y-15')}
-        ${fill && cx('fill')}
-        `}
-      style={{ backgroundColor: backgroundColor }}
+      className={containerClass}
+      style={{ backgroundColor, margin: '0 auto' }}
     >
       {children}
     </div>
@@ -35,7 +37,7 @@ Container.propTypes = {
   isBackgroundVisible: PropTypes.bool,
   shouldApplyPadding: PropTypes.bool,
   backgroundColor: PropTypes.string,
-  fill: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 export default Container;

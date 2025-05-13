@@ -1,27 +1,29 @@
 import React from 'react';
-import classNames from 'classnames/bind';
 import PropTypes from 'prop-types';
-
-import styles from './LevelBox.module.scss';
-
-const cx = classNames.bind(styles);
 
 const LevelBox = ({ level, point, process = 0 }) => {
   return (
-    <span className={cx('level-box', `${point && 'point-box'}`)}>
-      {point !== undefined && <span className={cx('level')}>{point}</span>}
+    <span
+      className={`relative inline-block px-1 py-[2px] text-xs rounded border border-red-500 mr-2 ${
+        point !== undefined
+          ? 'min-w-[36px] text-center bg-[#f9f9f9]'
+          : 'bg-gray-300'
+      }`}
+    >
+      {point !== undefined && <span className="text-red-500">{point}</span>}
       {level !== undefined && (
-        <span className={cx('level')}>{'Cấp ' + level}</span>
+        <span className="text-red-500">{'Cấp ' + level}</span>
       )}
       {process !== undefined && (
         <span
-          className={cx('process-bar')}
-          style={{ width: process + '%' }}
+          className="absolute top-0 left-0 right-0 bottom-0 bg-[#d0b32e] opacity-50"
+          style={{ width: `${process}%` }}
         ></span>
       )}
     </span>
   );
 };
+
 LevelBox.propTypes = {
   level: PropTypes.number,
   point: PropTypes.any,

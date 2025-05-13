@@ -1,12 +1,14 @@
+import { envConstant } from '@/config/envConstant';
+
 const deleteReadingHistoryFromLocal = (id) => {
   let readingHistories = JSON.parse(
-    localStorage.getItem('local_reading_histories')
+    localStorage.getItem(envConstant.readingHistoryOnLocal)
   );
   if (!readingHistories) return [];
 
   readingHistories = readingHistories.filter((item) => item.id !== id);
   localStorage.setItem(
-    'local_reading_histories',
+    envConstant.readingHistoryOnLocal,
     JSON.stringify(readingHistories)
   );
   // trả về mảng sau khi xóa

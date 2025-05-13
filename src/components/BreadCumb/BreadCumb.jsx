@@ -1,19 +1,17 @@
 import React from 'react';
-import classNames from 'classnames/bind';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-import useTheme from '@/hooks/useTheme';
-import styles from './BreadCumb.module.scss';
-import pathMappings from './pathMappings';
+import pathMappings from '@/config/pathMappings';
 
-const cx = classNames.bind(styles);
-function BreadCumb({ comicName }) {
+function BreadCumb({ comicName, disabledTheme = false }) {
   const location = useLocation();
-  const themeClassName = useTheme(cx);
-  const { storyName, storyID, chap, userID, chapterID } = useParams();
+  const { darkTheme } = useSelector((state) => state.theme);
+
+  const { storyName, storyID, chap, userId, chapterID } = useParams();
 
   const pathname = location.pathname.split('/').filter((x) => x);
 
@@ -27,7 +25,7 @@ function BreadCumb({ comicName }) {
       routeTo = pathMappings[path].routeTo || routeTo;
     } else if (path === storyID) {
       displayName = null;
-    } else if (path === userID) {
+    } else if (path === userId) {
       displayName = null;
     }
     //comicName is props
@@ -46,13 +44,17 @@ function BreadCumb({ comicName }) {
           <>
             {displayName && (
               <>
-                <FontAwesomeIcon icon={faAnglesRight} />
+                <FontAwesomeIcon
+                  icon={faAnglesRight}
+                  className="px-[6px] text-[#ccc] text-[10px]"
+                />
                 <Link
                   to={
                     displayName && displayName.includes('Chapter')
                       ? ''
                       : routeTo
                   }
+                  className="hover:underline link-colored !text-sm"
                 >
                   {displayName}
                 </Link>
@@ -67,8 +69,12 @@ function BreadCumb({ comicName }) {
   });
 
   return (
-    <div className={`${cx('breadcumb')} ${themeClassName}`}>
-      <Link to="/">Trang chủ</Link>
+    <div
+      className={`${darkTheme && !disabledTheme ? 'dark' : ''} capitalize text-sm pb-2`}
+    >
+      <Link className="hover:underline link-colored !text-sm" to="/">
+        Trang chủ
+      </Link>
       {breadCumbItems}
     </div>
   );
@@ -76,5 +82,6 @@ function BreadCumb({ comicName }) {
 
 BreadCumb.propTypes = {
   comicName: PropTypes.string,
+  disabledTheme: PropTypes.bool,
 };
 export default BreadCumb;

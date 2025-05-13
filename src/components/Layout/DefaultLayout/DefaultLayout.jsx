@@ -1,13 +1,16 @@
-import classNames from 'classnames/bind';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-import styles from './DefaultLayout.module.scss';
-import useTheme from '../../../hooks/useTheme';
-
-const cx = classNames.bind(styles);
 function DefaultLayout({ children }) {
-  const themeClassName = useTheme(cx);
-  return <div className={cx('default-layout', themeClassName)}>{children}</div>;
+  const darkTheme = useSelector((state) => state.theme.darkTheme);
+
+  return (
+    <div
+      className={`pt-10 ${darkTheme ? 'bg-dark-main-background' : 'bg-main-background'}`}
+    >
+      {children}
+    </div>
+  );
 }
 
 DefaultLayout.propTypes = {

@@ -1,197 +1,141 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
-
-import classNames from 'classnames/bind';
-
-import SecondaryHeading from '../Heading/SecondaryHeading/SecondaryHeading';
-import DefaultLayout from '../Layout/DefaultLayout/DefaultLayout';
-import Grid from '../Layout/Grid/Grid';
-import Row from '../Layout/Row/Row';
-import Col from '../Layout/Col/Col';
-import Container from '../Layout/Container/Container';
+import SecondaryHeading from '@/components/Heading/SecondaryHeading/SecondaryHeading';
+import DefaultLayout from '@/components/Layout/DefaultLayout/DefaultLayout';
+import Container from '@/components/Layout/Container/Container';
 import SubmitButton from '@/components/Button/SubmitButton/SubmitButton';
-import Input from '../Input/Input';
+import Input from '@/components/Input/Input';
 import BreadCumb from '@/components/BreadCumb/BreadCumb';
-
-import { createUser } from '@/api/userApi';
-import { login as loginAction, logout } from '@/redux/authSlice';
-import styles from './Register.module.scss';
-import useTheme from '../../hooks/useTheme';
 import { login } from '@/api/authApi';
-
-const cx = classNames.bind(styles);
+import { login as loginAction } from '@/redux/authSlice';
+import { createUser } from '@/api/userApi';
+import { registerSchema } from '@/schemas/registerSchema';
 
 function Register() {
-  const themeClassName = useTheme(cx);
+  const { darkTheme } = useSelector((state) => state.theme);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const [password, setPassword] = useState(''); // để so sánh repassword với password
-
-  const style = {
-    fontSize: '14px',
-  };
 
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: (data) => {
-      dispatch(loginAction(data));
+      // set token
+      const { result } = data;
+      localStorage.setItem(envConstant.tokenName, result.accessToken);
+      localStorage.setItem(envConstant.refreshTokenName, result.refreshToken);
+      // update app state
+      dispatch(loginAction());
       navigate('/');
     },
   });
+
   const createUserMutation = useMutation({
     mutationFn: createUser,
-    onSuccess: (data) => {
+    onSuccess: (variables) => {
       toast.success('Đăng ký thành công!', {
-        style,
+        style: {
+          fontSize: '14px',
+        },
       });
 
+      // call api login after register success
       loginMutation.mutate({
-        email: data.email,
-        password,
+        email: variables.email,
+        password: variables.password,
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast.error('Tài khoản đã tồn tại!', {
-        style,
+        style: {
+          fontSize: '14px',
+        },
       });
     },
   });
 
   const {
     register,
-    getValues,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
-    criteriaMode: 'firstError',
+    resolver: zodResolver(registerSchema),
   });
 
-  // submit form and login
   const handleSubmitData = async (data) => {
-    dispatch(logout());
     createUserMutation.mutate(data);
   };
 
   return (
     <DefaultLayout>
       <Container shouldApplyPadding isBackgroundVisible>
-        <div className={cx('register', themeClassName)}>
+        <div className={darkTheme ? 'dark' : ''}>
           <BreadCumb />
-          <Grid>
-            <Row>
-              <Col sizeXs={12} sizeMd={6} offsetMd={3}>
-                <div className={cx('register-form')}>
-                  <form
-                    onSubmit={handleSubmit(handleSubmitData)}
-                    className="submit-form"
-                  >
-                    <SecondaryHeading title="Đăng kí" bottom={20} size={2.2} />
+          <div className="grid grid-cols-12">
+            <div className="col-span-12 md:col-span-6 md:col-start-4">
+              <div className="min-h-[500px]">
+                <form
+                  onSubmit={handleSubmit(handleSubmitData)}
+                  className="submit-form"
+                >
+                  <SecondaryHeading title="Đăng kí" bottom={20} size={1.8} />
 
-                    <Input
-                      label="Tên tài khoản"
-                      id="name"
-                      type="text"
-                      placeholder="Nhập tài khoản"
-                      register={register}
-                      config={{
-                        required: 'Tài khoản không được để trống',
-                        minLength: {
-                          value: 6,
-                          message: 'Tài khoản dài 6-16 kí tự',
-                        },
-                        pattern: {
-                          value: /^[a-zA-Z0-9]+$/,
-                          message: 'Tài khoản không được chứa kí tự đặc biệt',
-                        },
-                        maxLength: {
-                          value: 16,
-                          message: 'Tài khoản dài 6-16 kí tự',
-                        },
-                      }}
-                      errors={errors}
-                    />
+                  <Input
+                    label="Tên tài khoản"
+                    id="name"
+                    type="text"
+                    placeholder="Nhập tài khoản"
+                    register={register}
+                    errors={errors}
+                  />
 
-                    <Input
-                      label="Email"
-                      id="email"
-                      type="text"
-                      placeholder="VD abc@gmail.com"
-                      register={register}
-                      config={{
-                        required: 'Chưa nhập email',
-                        pattern: {
-                          value: /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/,
-                          message: 'Email không hợp lệ',
-                        },
-                      }}
-                      errors={errors}
-                    />
+                  <Input
+                    label="Email"
+                    id="email"
+                    type="text"
+                    placeholder="VD abc@gmail.com"
+                    register={register}
+                    errors={errors}
+                  />
 
-                    <Input
-                      label="Mật khẩu"
-                      id="password"
-                      type="password"
-                      placeholder="Nhập mật khẩu"
-                      register={register}
-                      config={{
-                        required: 'Chưa nhập mật khẩu',
-                        pattern: {
-                          required: 'Mật khẩu không được để trống',
-                          pattern: {
-                            value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$/,
-                            message:
-                              'Mật khẩu không chứa kí tự đặc biệt và phải bao gồm cả chữ và số',
-                          },
-                          minLength: {
-                            value: 6,
-                            message: 'Mật khẩu phải dài 6-20 kí tự',
-                          },
-                          maxLength: {
-                            value: 20,
-                            message: 'Mật khẩu dài 6-20 kí tự',
-                          },
-                        },
-                      }}
-                      onChange={(e) => setPassword(e.target.value)}
-                      errors={errors}
-                    />
-                    <Input
-                      label="Nhập lại mật khẩu"
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="Nhập lại mật khẩu"
-                      register={register}
-                      config={{
-                        required: 'Nhập lại mật khẩu',
-                        validate: (value) =>
-                          value === getValues('password') ||
-                          'Nhập lại mật khẩu không chính xác',
-                      }}
-                      errors={errors}
-                    />
+                  <Input
+                    label="Mật khẩu"
+                    id="password"
+                    type="password"
+                    placeholder="Nhập mật khẩu"
+                    register={register}
+                    errors={errors}
+                  />
+                  <Input
+                    label="Nhập lại mật khẩu"
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Nhập lại mật khẩu"
+                    register={register}
+                    errors={errors}
+                  />
 
-                    <div className={cx('register-action')}>
-                      Có tài khoản?
-                      <Link to={'/login'} className="ml10">
-                        Đăng nhập ngay
-                      </Link>
-                    </div>
-                    <div>
-                      <SubmitButton type="normal" title="Đăng kí" />
-                    </div>
-                  </form>
-                </div>
-              </Col>
-            </Row>
-          </Grid>
+                  <div className="flex justify-end mt-2 space-x-2">
+                    <span className="text-sm dark:text-gray-200">
+                      Có tài khoản ?
+                    </span>
+                    <Link
+                      to="/login"
+                      className="text-sm text-light-blue-heading hover:text-main-purple hover:underline"
+                    >
+                      Đăng nhập ngay
+                    </Link>
+                  </div>
+
+                  <SubmitButton type="normal" title="Đăng kí" />
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
       </Container>
     </DefaultLayout>
@@ -199,8 +143,3 @@ function Register() {
 }
 
 export default Register;
-
-/** <SubmitButton
-      type="google"
-      title="Đăng nhập với tài khoản Google"
-                      /> */

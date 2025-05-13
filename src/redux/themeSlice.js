@@ -1,8 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// Khởi tạo state với giá trị từ localStorage
 const initialState = {
-  darkTheme: JSON.parse(localStorage.getItem('darkTheme')) || false, // Đảm bảo là boolean
+  darkTheme: JSON.parse(localStorage.getItem('darkTheme')) || false,
 };
 
 const themeSlice = createSlice({
@@ -11,8 +10,8 @@ const themeSlice = createSlice({
   reducers: {
     toggleTheme(state) {
       const newDarkTheme = !state.darkTheme;
-      console.log(state.darkTheme);
-      localStorage.setItem('darkTheme', JSON.stringify(newDarkTheme)); // Lưu vào localStorage
+
+      localStorage.setItem('darkTheme', JSON.stringify(newDarkTheme));
       state.darkTheme = newDarkTheme;
     },
   },

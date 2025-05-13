@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames/bind';
 import { NavLink } from 'react-router-dom';
-
-import styles from './FilterButton.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import styles from './FilterButton.module.scss';
+
 const cx = classNames.bind(styles);
 
 const FilterButton = ({

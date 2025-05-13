@@ -1,16 +1,23 @@
 import React from 'react';
-import classNames from 'classnames/bind';
-
-import styles from './NotFound.module.scss';
 import { Link } from 'react-router-dom';
 
-const cx = classNames.bind(styles);
 function NotFound() {
   return (
-    <div className={cx('not-found')}>
-      <img src="/images/not-found/404.svg" alt="not-found" />
-      <h3>Oops! page not found.</h3>
-      <Link to="/">Go home</Link>
+    <div className="text-center flex flex-col items-center justify-center min-h-screen px-4">
+      <img
+        src="/images/not-found/404.svg"
+        alt="not-found"
+        className="max-w-[60%] mx-auto"
+      />
+      <h3 className="font-semibold text-[2.4rem] leading-tight text-gray-800 mt-6">
+        Oops! page not found.
+      </h3>
+      <Link
+        to="/"
+        className="inline-block !my-4 !px-6 !py-3 border-2 border-gray-600 rounded-full text-gray-600 font-semibold"
+      >
+        Go home
+      </Link>
     </div>
   );
 }

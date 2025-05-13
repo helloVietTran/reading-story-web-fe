@@ -1,53 +1,52 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
-import classNames from 'classnames/bind';
+import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
-
 import BreadCumb from '@/components/BreadCumb/BreadCumb';
-import SecondaryHeading from '../Heading/SecondaryHeading/SecondaryHeading';
+import SecondaryHeading from '@/components/Heading/SecondaryHeading/SecondaryHeading';
 import SubmitButton from '@/components/Button/SubmitButton/SubmitButton';
-import Input from '../Input/Input';
-import DefaultLayout from '../Layout/DefaultLayout/DefaultLayout';
-import Container from '../Layout/Container/Container';
-import Grid from '../Layout/Grid/Grid';
-import Row from '../Layout/Row/Row';
-import Col from '../Layout/Col/Col';
-
-import useTheme from '@/hooks/useTheme';
-import styles from './Login.module.scss';
+import Input from '@/components/Input/Input';
+import DefaultLayout from '@/components/Layout/DefaultLayout/DefaultLayout';
+import Container from '@/components/Layout/Container/Container';
 import { login } from '@/api/authApi';
 import { login as loginAction } from '@/redux/authSlice';
-
-const cx = classNames.bind(styles);
+import { envConstant } from '@/config/envConstant';
+import { loginSchema } from '@/schemas/loginSchema';
 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const themeClassName = useTheme(cx);
 
-  const toastStyles = {
-    fontSize: '14px',
-  };
+  const { darkTheme } = useSelector((state) => state.theme);
 
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: (data) => {
-      dispatch(loginAction(data));
+      const { result } = data;
+      dispatch(loginAction());
+      // set token
+      localStorage.setItem(envConstant.tokenName, result.accessToken);
+      localStorage.setItem(envConstant.refreshTokenName, result.refreshToken);
+
       navigate('/');
     },
-    onError: (error) => {
+    onError: () => {
       toast.error(
-        'Đăng nhập thất bại! \nVui lòng kiểm tra lại tài khoản hoặc mật khẩu.',
+        'Đăng nhập thất bại! Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.',
         {
-          style: toastStyles,
+          style: {
+            fontSize: '14px',
+          },
         }
       );
     },
     onMutate: () => {
       toast.loading('Đang xử lý', {
-        style: toastStyles,
+        style: {
+          fontSize: '14px',
+        },
         id: 'loading',
       });
     },
@@ -62,9 +61,10 @@ function Login() {
     handleSubmit,
     formState: { errors },
   } = useForm({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: envConstant.default_email,
+      password: envConstant.default_password,
     },
   });
 
@@ -73,81 +73,53 @@ function Login() {
   };
 
   return (
-    <div className={`${cx('login')} ${themeClassName}`}>
+    <div className={darkTheme ? 'dark' : ''}>
       <DefaultLayout>
         <Container isBackgroundVisible shouldApplyPadding>
           <BreadCumb />
-          <Grid>
-            <Row>
-              <Col sizeXs={12} sizeMd={6} offsetMd={3}>
-                <div className={cx('login-form')}>
-                  <SecondaryHeading bottom={20} title="Đăng nhập" size={2.2} />
-                  <form
-                    onSubmit={handleSubmit(handleSubmitData)}
-                    className="submit-form"
-                  >
-                    <Input
-                      label="Email"
-                      id="email"
-                      type="text"
-                      placeholder="VD abc@gmail.com"
-                      register={register}
-                      config={{
-                        required: 'Chưa nhập email',
-                        pattern: {
-                          value: /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/,
-                          message: 'Email không hợp lệ',
-                        },
-                      }}
-                      errors={errors}
-                    />
-                    <Input
-                      label="Password"
-                      id="password"
-                      type="password"
-                      placeholder="Nhập mật khẩu"
-                      register={register}
-                      config={{
-                        required: 'Chưa nhập email',
-                        pattern: {
-                          required: 'Mật khẩu không được để trống',
-                          pattern: {
-                            value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,16}$/,
-                            message:
-                              'Mật khẩu không chứa kí tự đặc biệt và phải bao gồm cả chữ và số',
-                          },
-                          minLength: {
-                            value: 6,
-                            message: 'Mật khẩu phải dài 6-16 kí tự',
-                          },
-                          maxLength: {
-                            value: 12,
-                            message: 'Mật khẩu dài 6-12 kí tự',
-                          },
-                        },
-                      }}
-                      errors={errors}
-                    />
 
-                    <div className={cx('login-action')}>
-                      <Link to={'/forgot-password'}>Quên mật khẩu</Link>
-                      <Link to={'/register'} className="ml10">
-                        Đăng kí mới
-                      </Link>
-                    </div>
+          <div className="grid grid-cols-12">
+            <div className="col-span-12 md:col-span-6 md:col-start-4">
+              <div className="min-h-[500px]">
+                <SecondaryHeading bottom={20} title="Đăng nhập" size={1.8} />
+                <form onSubmit={handleSubmit(handleSubmitData)}>
+                  <Input
+                    label="Email"
+                    id="email"
+                    type="text"
+                    placeholder="VD abc@gmail.com"
+                    register={register}
+                    errors={errors}
+                  />
+                  <Input
+                    label="Password"
+                    id="password"
+                    type="password"
+                    placeholder="Nhập mật khẩu"
+                    register={register}
+                    errors={errors}
+                  />
 
-                    <div>
-                      <SubmitButton type="normal" title="Đăng nhập" />
-                      <SubmitButton
-                        type="google"
-                        title="Đăng nhập với tài khoản Google"
-                      />
-                    </div>
-                  </form>
-                </div>
-              </Col>
-            </Row>
-          </Grid>
+                  <div className="flex justify-end mt-2 space-x-2">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-light-blue-heading hover:text-main-purple hover:underline"
+                    >
+                      Quên mật khẩu
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="text-sm text-light-blue-heading hover:text-main-purple hover:underline"
+                    >
+                      Đăng kí mới
+                    </Link>
+                  </div>
+
+                  <SubmitButton type="normal" title="Đăng nhập" />
+                </form>
+              </div>
+            </div>
+          </div>
         </Container>
       </DefaultLayout>
     </div>

@@ -1,4 +1,4 @@
-import axiosConfig from '../config/axiosConfig';
+import axiosInstance from '@/config/axiosConfig';
 
 export const likeComment = async (commentId) => {
   await axiosConfig.post(`/like/${commentId}`);

@@ -1,20 +1,17 @@
-import classNames from 'classnames/bind';
+import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faHome, faSort } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 
-import styles from './NavBar.module.scss';
+import './Navbar.css';
 import Container from '../Layout/Container/Container';
 import SortMenu from '../Menu/SortMenu/SortMenu';
 import GenreMenu from '../Menu/GenreMenu/GenreMenu';
 
-import useTheme from '@/hooks/useTheme';
-
-const cx = classNames.bind(styles);
 function NavBar({ isPreventFixed }) {
-  const themeClassName = useTheme(cx);
+  const darkTheme = useSelector((state) => state.theme.darkTheme);
 
   const [isFixed, setIsFixed] = useState(false);
   const [isOpenGenreMenu, setIsOpenGenreMenu] = useState(false);
@@ -35,23 +32,24 @@ function NavBar({ isPreventFixed }) {
     }
   }, [isPreventFixed]);
 
-  const checkLinkActive = ({ isActive }) =>
-    isActive
-      ? `${cx('active')} ${themeClassName} ${cx('nav-link')}`
-      : `${themeClassName} ${cx('nav-link')}`;
+  const checkLinkActive = ({ isActive }) => {
+    let classes = 'nav-link';
+    if (isActive) classes += ' active';
+    if (darkTheme) classes += ' dark';
+    if (isActive && darkTheme) classes += ' active dark';
+    return classes;
+  };
 
   return (
     <nav
-      className={`${cx('main-nav')} ${themeClassName} 
-                  ${isFixed ? cx('fixed') : ''}
-                  ${cx('sm-hide')}
-                `}
+      className={`${darkTheme && 'dark'} bg-navbar-background dark:bg-black/90
+                  ${isFixed ? 'fixed top-0 left-0 right-0 z-10' : ''} navbar`}
     >
       <Container>
-        <ul className={cx('nav-list')}>
+        <ul className={`nav-list${darkTheme ? ' dark' : ''}`}>
           <li>
             <NavLink to="/" className={checkLinkActive}>
-              <FontAwesomeIcon icon={faHome} className={cx('home-icon')} />
+              <FontAwesomeIcon icon={faHome} />
             </NavLink>
           </li>
           <li>
@@ -70,29 +68,29 @@ function NavBar({ isPreventFixed }) {
             </NavLink>
           </li>
           <li
-            className={cx('dropdown-menu')}
+            className="relative"
             onMouseEnter={() => setIsOpenGenreMenu(true)}
             onClick={() => setIsOpenGenreMenu(!isOpenGenreMenu)}
             onMouseLeave={() => setIsOpenGenreMenu(false)}
           >
             <NavLink to="/find-story" className={checkLinkActive}>
               Thể loại
-              <FontAwesomeIcon icon={faCaretDown} className={cx('down-icon')} />
+              <FontAwesomeIcon icon={faCaretDown} className="!pl-1" />
             </NavLink>
             {isOpenGenreMenu && <GenreMenu />}
           </li>
           <li
-            className={cx('dropdown-menu')}
+            className="relative"
             onMouseEnter={() => setIsOpenSortMenu(true)}
             onClick={() => setIsOpenSortMenu(!isOpenSortMenu)}
             onMouseLeave={() => setIsOpenSortMenu(false)}
           >
             <Link
               to="/find-story"
-              className={`${themeClassName} ${cx('nav-link')}`}
+              className={`nav-link${darkTheme ? ' dark' : ''}`}
             >
               Xếp hạng
-              <FontAwesomeIcon icon={faSort} className={cx('sort-icon')} />
+              <FontAwesomeIcon icon={faSort} className="!pl-1" />
             </Link>
             {isOpenSortMenu && <SortMenu />}
           </li>
@@ -114,9 +112,9 @@ function NavBar({ isPreventFixed }) {
             </NavLink>
           </li>
 
-          <li className={cx('navBar-item', 'md-hide')}>
+          <li className="max-lg:hidden">
             <Link
-              className={`${themeClassName} ${cx('nav-link')}`}
+              className={`nav-link${darkTheme ? ' dark' : ''}`}
               to="https://www.facebook.com/anh.tranviet.3386"
               target="_blank"
             >
@@ -124,9 +122,9 @@ function NavBar({ isPreventFixed }) {
             </Link>
           </li>
 
-          <li className={cx('navBar-item', 'md-hide')}>
+          <li className="max-lg:hidden">
             <Link
-              className={`${themeClassName} ${cx('nav-link')}`}
+              className={`nav-link${darkTheme ? ' dark' : ''}`}
               to="https://www.facebook.com/profile.php?id=61556648275676"
               target="_blank"
             >

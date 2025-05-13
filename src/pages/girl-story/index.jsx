@@ -1,30 +1,24 @@
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
-import NavBarModal from '@/components/Modal/NavBarModal/NavBarModal';
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/NavBar/NavBar';
+import NavBar from '@/components/Navbar/Navbar';
 import Main from '@/components/Main/Main';
 import Footer from '@/components/Footer/Footer';
 import TopStory from '@/components/TopStory/TopStory';
-
 import { getStoriesByGender } from '@/api/storyApi';
-import createQueryFn from '@/utils/createQueryFn';
+import { queryKey } from '@/config/queryKey';
+import SplashScreen from '@/components/SplashScreen/SplashScreen';
 
 function GirlStory() {
-  const isOpen = useSelector((state) => state.navbar.isOpen);
   const [searchParams] = useSearchParams();
 
   const page = searchParams.get('page') || 1;
 
-  const storyQuery = useQuery({
-    queryKey: ['girlStories', 'MALE', page],
-    queryFn: createQueryFn(getStoriesByGender),
-    onError: (error) => {
-      console.error('Error fetching stories:', error);
-    },
+  const storiesQuery = useQuery({
+    queryKey: [queryKey.GIRL_STORIES, 'MALE', page],
+    queryFn: () => getStoriesByGender('MALE', page),
   });
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -33,22 +27,13 @@ function GirlStory() {
   return (
     <>
       <Head />
+      {storiesQuery.isLoading && <SplashScreen />}
+      <NavBar />
 
-      {isOpen ? (
-        <NavBarModal />
-      ) : (
-        <>
-          {storyQuery.data?.data && (
-            <>
-              <NavBar />
-              <Main title="Truyện con gái" data={storyQuery.data}>
-                <TopStory />
-              </Main>
-              <Footer />
-            </>
-          )}
-        </>
-      )}
+      <Main title="Truyện con gái" data={storiesQuery.data}>
+        <TopStory />
+      </Main>
+      <Footer />
     </>
   );
 }

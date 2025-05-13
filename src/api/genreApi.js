@@ -1,5 +1,4 @@
-import axiosInstance from '../config/axiosConfig';
-
+import axiosInstance from '@/config/axiosConfig';
 const genrePrefix = '/genres';
 
 export const getGenres = async () => {
