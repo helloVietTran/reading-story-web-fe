@@ -23,7 +23,6 @@
     "axios": "^1.6.7",
     "classnames": "^2.5.1",
     "framer-motion": "^12.10.3",
-    "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "normalize.css": "^8.0.1",
     "prop-types": "^15.8.1",
