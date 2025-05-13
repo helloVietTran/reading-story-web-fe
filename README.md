@@ -44,20 +44,35 @@ Backend:
 
 <table>
   <tr>
-    <td><img src="./public/demo/login.png" width="500"/></td>
-    <td><img src="./public/demo/home.png" width="500"/></td>
+    <td><img src="./public/demo/pic_15.png" width="500"/></td>
+    <td><img src="./public/demo/pic_14.png" width="500"/></td>
   </tr>
   <tr>
-    <td><img src="./public/demo/modal.png" width="500"/></td>
-    <td><img src="./public/demo/author.png" width="500"/></td>
+    <td><img src="./public/demo/pic_13.png" width="500"/></td>
+    <td><img src="./public/demo/pic_12.png" width="500"/></td>
   </tr>
   <tr>
-    <td><img src="./public/demo/author-detail.png" width="500"/></td>
-    <td><img src="./public/demo/user-detail.png" width="500"/></td>
+    <td><img src="./public/demo/pic_11.png" width="500"/></td>
+    <td><img src="./public/demo/pic_10.png" width="500"/></td>
   </tr>
   <tr>
-    <td><img src="./public/demo/book.png" width="500"/></td>
-    <td><img src="./public/demo/chat app.png" width="500"/></td>
+    <td><img src="./public/demo/pic_9.png" width="500"/></td>
+    <td><img src="./public/demo/pic_8.png" width="500"/></td>
+  </tr>
+  <tr>
+    <td><img src="./public/demo/pic_7.png" width="500"/></td>
+    <td><img src="./public/demo/pic_6.png" width="500"/></td>
+  </tr>
+  <tr>
+    <td><img src="./public/demo/pic_5.png" width="500"/></td>
+    <td><img src="./public/demo/pic_4.png" width="500"/></td>
+  </tr>
+  <tr>
+    <td><img src="./public/demo/pic_3.png" width="500"/></td>
+    <td><img src="./public/demo/pic_2.png" width="500"/></td>
+  </tr>
+  <tr>
+    <td><img src="./public/demo/pic_1.png" width="500"/></td>
   </tr>
 </table>
     
