@@ -29,6 +29,7 @@ Frontend:
 - Xây dựng chức năng mua vật phẩm để giữ chân người dùng
 - Chức năng bình luận và thả cảm xúc bình luận
 Backend:
+
 - Cung cấp API quản lý truyện, quản lý chapter, quản lý người dùng, ...
 - Xây dựng tính năng tính toán level chính xác bằng Redis
 - Cron một số công việc: đồng bộ dữ liệu, đánh giá truyện hot
