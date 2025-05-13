@@ -1,10 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
-
-import styles from './ChapterSelect.module.scss';
-
-const cx = classNames.bind(styles);
 
 const ChapterSelect = ({
   currentChapter,
@@ -26,8 +21,8 @@ const ChapterSelect = ({
   return (
     <select
       value={currentChapter}
-      className="selected-chapter"
       onChange={handleChangeSelectedChap}
+      className="inline-block w-[120px] md:w-[240px] h-[34px] border border-gray-300 bg-white rounded-sm px-2 text-sm mx-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       {makeOptions()}
     </select>

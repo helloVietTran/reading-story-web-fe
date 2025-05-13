@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   faAngleLeft,
   faAngleUp,
@@ -8,30 +8,22 @@ import {
   faThumbsUp,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import classNames from 'classnames/bind';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
 import LevelBox from '@/components/Box/LevelBox/LevelBox';
-
-import styles from './CommentItem.module.scss';
-import useTheme from '@/hooks/useTheme';
 import CommentForm from '../CommentForm/CommentForm';
-import toast from 'react-hot-toast';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dislikeComment, likeComment } from '@/api/reactionApi';
-
-const cx = classNames.bind(styles);
+import { queryKey } from '@/config/queryKey';
 
 const CommentItem = ({ data: comment, isReply = false }) => {
-  const themeClassName = useTheme(cx);
-  // const queryClient = useQueryClient();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [openCommentForms, setOpenCommentForms] = useState({});
-  const [likeCount, setLikeCount] = useState(0);
-  const [dislikeCount, setDislikeCount] = useState(0);
 
+  const darkTheme = useSelector((state) => state.theme.darkTheme);
   const queryClient = useQueryClient();
 
   const { storyID } = useParams();
@@ -61,7 +53,9 @@ const CommentItem = ({ data: comment, isReply = false }) => {
   const likeMutation = useMutation({
     mutationFn: likeComment,
     onSuccess: () => {
-      queryClient.invalidateQueries(['storyComments', storyID, page]);
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.commentsOfStory(storyID)],
+      });
     },
     onError: () => {
       toast.error('Vui lòng thử lại sau!', {
@@ -73,7 +67,9 @@ const CommentItem = ({ data: comment, isReply = false }) => {
   const dislikeMutation = useMutation({
     mutationFn: dislikeComment,
     onSuccess: () => {
-      queryClient.invalidateQueries(['storyComments', storyID, page]);
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.commentsOfStory(storyID)],
+      });
     },
     onError: () => {
       toast.error('Vui lòng thử lại sau!', {
@@ -106,24 +102,21 @@ const CommentItem = ({ data: comment, isReply = false }) => {
 
   return (
     <div
-      className={
-        isReply ? cx('comment-item', 'reply-item') : cx('comment-item')
-      }
+      className={`py-3 ${isReply ? 'pl-14' : ''} ${darkTheme ? 'dark' : ''} `}
       key={comment.id}
     >
-      <figure>
-        <Link to={`/user/${comment.user.id}`}>
+      {/* Avatar */}
+      <figure className="relative float-left h-10 w-10 overflow-hidden rounded-full">
+        <Link to={`/users/${comment.user.id}`}>
           <img
-            src={
-              comment.user.imgSrc
-                ? comment.user.imgSrc
-                : '/images/anonymous/anonymous.png'
-            }
+            src={comment.user.imgSrc || '/images/anonymous/anonymous.png'}
             alt="avatar"
+            className="h-full w-full object-cover"
           />
+
           {comment.user?.frame && (
             <img
-              className={cx('avt-frame')}
+              className="absolute top-0 left-0 transform scale-110"
               src={comment.user.frame}
               alt="frame"
             />
@@ -131,79 +124,86 @@ const CommentItem = ({ data: comment, isReply = false }) => {
         </Link>
       </figure>
 
-      <div className={cx('box', themeClassName)}>
-        {isReply ? (
-          <FontAwesomeIcon
-            icon={faAngleUp}
-            className={cx('left-icon', 'up-icon')}
-          />
-        ) : (
-          <FontAwesomeIcon icon={faAngleLeft} className={cx('left-icon')} />
-        )}
-        <div className={cx('content')}>
-          <div className={cx('header')}>
-            <Link className={cx('author-name')}>{comment.user.name}</Link>
+      {/* Comment Box */}
+      <div className="ml-14 relative">
+        <FontAwesomeIcon
+          icon={isReply ? faAngleUp : faAngleLeft}
+          className={`absolute text-gray-400 text-sm bg-transparent ${
+            isReply ? 'top-[-9px] left-[5px]' : 'top-[5px] left-[-6px]'
+          }`}
+        />
+
+        <div className="border border-gray-300 bg-white dark:bg-gray-800 p-2 text-sm rounded">
+          {/* Header */}
+          <div className="border-b border-gray-300 pb-1 flex flex-wrap items-center">
+            <Link
+              className="text-blue-detail-heading dark:text-yellow-400 font-semibold text-[13px] mr-2 hover:underline hover:text-purple-600 "
+              to={`/users/${comment.user.id}`}
+            >
+              {comment.user.name}
+            </Link>
 
             <LevelBox
               process={comment.user.level.process}
               level={comment.user.level.level}
             />
 
-            <span className={cx('cmchapter')}>
-              {`Chapter ${comment.atChapter}`}
-            </span>
+            <span className="link-colored ml-2 italic !text-xs">{`Chapter ${comment.atChapter}`}</span>
           </div>
 
-          <div className={cx('comment-body', themeClassName)}>
-            {isReply ? (
-              <span className={cx('mention')}>
-                {' '}
-                <FontAwesomeIcon icon={faMailForward} />
-                {comment.replyTo + ' '}
+          {/* Comment Body */}
+          <div className="py-2 break-words text-gray-800 dark:text-gray-100">
+            {isReply && (
+              <span className="text-orange-500 inline-block mr-1 italic">
+                <FontAwesomeIcon icon={faMailForward} className="mr-1" />
+                {comment.replyTo}
               </span>
-            ) : (
-              ''
             )}
             {comment.content}
           </div>
 
-          <ul className={cx('comment-footer', themeClassName)}>
+          {/* Footer */}
+          <ul className="flex flex-wrap items-center text-blue-detail-heading dark:text-gray-200 text-[13px] space-x-4 mt-1">
             <li>
-              <span
-                className={cx('reply')}
+              <button
                 onClick={() => handleReplyClick(comment.id)}
+                className="hover:underline"
               >
-                <FontAwesomeIcon icon={faComment} className="mr4" />
+                <FontAwesomeIcon icon={faComment} className="mr-1" />
                 Trả lời
-              </span>
+              </button>
             </li>
 
             <li>
-              <span
-                className={cx('like')}
+              <button
                 onClick={() => handleLikeComment(comment.id)}
+                className="hover:underline"
               >
-                <FontAwesomeIcon icon={faThumbsUp} className="mr4" />
-                {likeCount === 0 ? comment.likeCount : likeCount}
-              </span>
+                <FontAwesomeIcon icon={faThumbsUp} className="mr-1" />
+                {comment.likeCount || 0}
+              </button>
             </li>
 
             <li>
-              <span
-                className={cx('dislike')}
+              <button
                 onClick={() => handleDisLikeComment(comment.id)}
+                className="hover:underline"
               >
-                <FontAwesomeIcon icon={faThumbsDown} className="mr4" />
-                {dislikeCount === 0 ? comment.dislikeCount : dislikeCount}
-              </span>
+                <FontAwesomeIcon icon={faThumbsDown} className="mr-1" />
+                {comment.dislikeCount || 0}
+              </button>
             </li>
 
             <li>
-              <abbr>{comment.createdAt}</abbr>
+              <abbr className="text-gray-400 text-xs whitespace-nowrap border-b border-dotted">
+                {comment.createdAt}
+              </abbr>
             </li>
           </ul>
         </div>
       </div>
+
+      {/* Reply Form */}
       {openCommentForms[comment.id] && (
         <CommentForm
           hasDistance

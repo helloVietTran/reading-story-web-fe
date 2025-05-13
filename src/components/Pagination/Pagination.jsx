@@ -1,74 +1,86 @@
 import React from 'react';
-import classname from 'classnames/bind';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-
-import styles from './Pagination.module.scss';
-import useTheme from '../../hooks/useTheme';
-
-const cx = classname.bind(styles);
+import { useSelector } from 'react-redux';
 
 function Pagination({ data }) {
-  const themeClassName = useTheme(cx);
   const navigate = useNavigate();
+  const darkTheme = useSelector((state) => state.theme.darkTheme);
 
-  if (!data) {
-    return;
-  }
-  // lấy từ data
-  const totalStories = data.totalElements;
-  const totalPages = data.totalPages;
-  const currentPage = data.currentPage;
-  const storiesPerPage = 32;
-  const pages = [];
+  if (!data) return null;
 
-  if (totalStories <= storiesPerPage) {
-    return;
-  }
+  const { totalElements, totalPages, currentPage, pageSize } = data;
 
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(i);
-  }
+  if (totalElements <= pageSize) return null;
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   const goToNextPage = () => {
-    navigate(`?page=${currentPage + 1}`);
+    if (currentPage < totalPages) {
+      navigate(`?page=${currentPage + 1}`);
+    }
   };
+
   const goToPrevPage = () => {
-    navigate(`?page=${currentPage - 1}`);
+    if (currentPage > 1) {
+      navigate(`?page=${currentPage - 1}`);
+    }
   };
+
+  const textColor = darkTheme ? 'text-orange-500' : 'text-blue-600';
+  const hoverBg = 'hover:bg-gray-100';
+  const activeBg = darkTheme ? 'bg-orange-500' : 'bg-blue-600';
 
   return (
-    <div className={`${cx('pagination-outer')} ${themeClassName}`}>
-      <ul className={cx('pagination')}>
-        <li className={cx('page-item')}>
-          <span
-            className={currentPage <= 1 ? cx('disabled') : undefined}
-            onClick={() => goToPrevPage()}
+    <div className={`text-center ${darkTheme ? 'dark text-gray-200' : ''}`}>
+      <ul className="inline-flex flex-wrap gap-1 my-6 justify-center">
+        {/* Prev Button */}
+        <li>
+          <button
+            onClick={goToPrevPage}
+            disabled={currentPage <= 1}
+            className={`w-9 h-9 rounded-md border border-gray-300 text-base transition-colors 
+              ${
+                currentPage <= 1
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : `bg-white ${textColor} ${hoverBg}`
+              }`}
           >
             ‹
-          </span>
+          </button>
         </li>
 
-        {pages.map((number) => {
-          return (
-            <li className={cx('page-item')} key={uuidv4()}>
-              <NavLink
-                to={`?page=${number}`}
-                className={currentPage === number ? cx('active') : null}
-              >
-                {number}
-              </NavLink>
-            </li>
-          );
-        })}
+        {/* Page Numbers */}
+        {pages.map((number) => (
+          <li key={uuidv4()}>
+            <NavLink
+              to={`?page=${number}`}
+              className={`w-9 h-9 flex items-center justify-center text-base rounded-md border border-gray-300 transition-colors
+                ${
+                  currentPage === number
+                    ? `${activeBg} text-white pointer-events-none`
+                    : `bg-white ${textColor} ${hoverBg}`
+                }`}
+            >
+              {number}
+            </NavLink>
+          </li>
+        ))}
 
-        <li className={cx('page-item')}>
-          <span
-            className={currentPage >= totalPages ? cx('disabled') : null}
-            onClick={() => goToNextPage()}
+        {/* Next Button */}
+        <li>
+          <button
+            onClick={goToNextPage}
+            disabled={currentPage >= totalPages}
+            className={`w-9 h-9 rounded-md border border-gray-300 text-base transition-colors 
+              ${
+                currentPage >= totalPages
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : `bg-white ${textColor} ${hoverBg}`
+              }`}
           >
             ›
-          </span>
+          </button>
         </li>
       </ul>
     </div>

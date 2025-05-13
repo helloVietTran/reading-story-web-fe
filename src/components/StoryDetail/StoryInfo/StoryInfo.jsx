@@ -1,49 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
 import { Link, useParams } from 'react-router-dom';
 import {
   faUser,
   faRss,
   faTags,
   faEye,
-  faAngleRight,
   faPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import toast from 'react-hot-toast';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-import StoryDetailItem from '../StoryDetailItem/StoryDetailItem';
+import StoryInfoRow from '../StoryInfoRow/StoryInfoRow';
 import PrimaryButton from '@/components/Button/PrimaryButton/PrimaryButton';
-import Row from '@/components/Layout/Row/Row';
-import Col from '@/components/Layout/Col/Col';
-
-import styles from './StoryInfo.module.scss';
-import useTheme from '@/hooks/useTheme';
 import { getFollowedStoryByStoryId, ratingStory } from '@/api/storyApi';
-import createQueryFn from '@/utils/createQueryFn';
 import { followStory, unfollowStory } from '@/api/userApi';
-
-const cx = classNames.bind(styles);
+import { queryKey } from '@/config/queryKey';
 
 const StoryInfo = ({ story, isAuthenticated }) => {
-  const themeClassName = useTheme(cx);
-
+  const { darkTheme } = useSelector((state) => state.theme);
   const queryClient = useQueryClient();
 
   const [isFollowed, setIsFollowed] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-
   const { storyID } = useParams();
 
-  const [followerCount, setFollowerCount] = useState(0);
-
-  //***********define query *************
+  // query
   const { data: myFollowedStory, isSuccess } = useQuery({
     enabled: !!storyID,
-    queryKey: ['myFollowedStory', storyID],
-    queryFn: createQueryFn(getFollowedStoryByStoryId),
+    queryKey: ['my-followed-story', storyID],
+    queryFn: () => getFollowedStoryByStoryId(storyID),
     retryDelay: () => 10000,
   });
 
@@ -57,12 +45,17 @@ const StoryInfo = ({ story, isAuthenticated }) => {
     fontSize: '14px',
   };
 
+  // mutation
   const followMutation = useMutation({
     mutationFn: followStory,
     onSuccess: () => {
-      queryClient.invalidateQueries(['myFollowedStory', storyID]);
+      queryClient.invalidateQueries(['my-followed-story', storyID]);
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.MY_FOLLOWED_STORIES],
+      });
+
       setIsFollowed(true);
-      setFollowerCount(0); // reset
     },
     onError: (error) => {
       toast.error('Có lỗi xảy ra. Vui lòng quay lại sau!', {
@@ -76,7 +69,12 @@ const StoryInfo = ({ story, isAuthenticated }) => {
   const unfollowMutation = useMutation({
     mutationFn: unfollowStory,
     onSuccess: () => {
-      queryClient.invalidateQueries(['myFollowedStory', storyID]);
+      queryClient.invalidateQueries(['my-followed-story', storyID]);
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.MY_FOLLOWED_STORIES],
+      });
+
       setIsFollowed(false);
     },
     onError: () => {
@@ -88,11 +86,16 @@ const StoryInfo = ({ story, isAuthenticated }) => {
     },
   });
 
+  // chức năng đánh giá
   const ratingMutation = useMutation({
     mutationFn: ratingStory,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Rating thành công!', {
         style: toastStyles,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.storyDetail(storyID), storyID],
       });
     },
     onError: (error) => {
@@ -102,7 +105,6 @@ const StoryInfo = ({ story, isAuthenticated }) => {
     },
   });
 
-  // chức năng đánh giá
   const totalStars = 5;
 
   const handleMouseEnter = (index) => {
@@ -118,8 +120,7 @@ const StoryInfo = ({ story, isAuthenticated }) => {
     ratingMutation.mutate({ storyId: storyID, point: index });
   };
 
-  // chức năng follow
-
+  // handle follow, unfollow
   const handleFollowStory = async (id) => {
     if (!isAuthenticated) {
       toast.error('Vui lòng đăng nhập để theo dõi truyện', {
@@ -133,7 +134,6 @@ const StoryInfo = ({ story, isAuthenticated }) => {
 
   const handleUnFollowStory = async () => {
     if (!myFollowedStory) return;
-
     unfollowMutation.mutate({
       followId: myFollowedStory.id,
       storyId: storyID,
@@ -155,48 +155,51 @@ const StoryInfo = ({ story, isAuthenticated }) => {
   );
 
   return (
-    <div className={cx('story-info', themeClassName)}>
-      <Row>
-        <Col sizeSm={4} sizeXs={12}>
-          <img src={story.imgSrc} alt="story" className={cx('story-img')} />
-        </Col>
+    <div className={`${darkTheme ? 'dark' : ''}`}>
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+        <div className="sm:col-span-4">
+          <img
+            src={story.imgSrc}
+            alt="story"
+            className="w-full object-cover rounded-sm"
+          />
+        </div>
 
-        <Col sizeSm={8} sizeXs={12}>
-          <StoryDetailItem
+        <div className="sm:col-span-8">
+          <StoryInfoRow
             label="Tác giả"
             content={!story.authorName ? 'Đang cập nhật' : story.authorName}
             icon={faUser}
           />
 
           {story.otherName && (
-            <StoryDetailItem
+            <StoryInfoRow
               label="Tên khác"
               icon={faPlus}
               content={story.otherName}
             />
           )}
 
-          <StoryDetailItem
+          <StoryInfoRow
             label="Tình trạng"
             content={story.status}
             icon={faRss}
           />
 
-          <StoryDetailItem
+          <StoryInfoRow
             label="Thể loại"
             icon={faTags}
             content={genreContent}
             key={'xyz'}
           />
 
-          <StoryDetailItem
+          <StoryInfoRow
             label="Lượt xem"
             icon={faEye}
             content={story.viewCount.toLocaleString()}
           />
 
-          <div className={`mt5 mb10 ${cx('follower')}`}>
-            <Link>{story.name + ' '}</Link>
+          <div className="text-sm !mb-1">
             <span>
               Xếp hạng:
               <span>{' ' + story.rate}</span>/<span>5</span>-
@@ -204,37 +207,29 @@ const StoryInfo = ({ story, isAuthenticated }) => {
               Lượt đánh giá
             </span>
           </div>
-          <div className={`${cx('rating')} mt5 mb10`}>
-            <Row>
-              <Col sizeXs={6}>
-                {Array.from({ length: totalStars }, (_, index) => {
-                  const starIndex = index + 1;
-                  return (
-                    <img
-                      className={cx('star-icon')}
-                      key={starIndex}
-                      src={
-                        starIndex <= (hoverRating || rating)
-                          ? '/images/rating/star-on.png'
-                          : '/images/rating/star-off.png'
-                      }
-                      alt="star"
-                      style={{
-                        cursor: 'pointer',
-                        width: '30px',
-                        height: '30px',
-                      }}
-                      onMouseEnter={() => handleMouseEnter(starIndex)}
-                      onMouseLeave={handleMouseLeave}
-                      onClick={() => handleClick(starIndex)}
-                    />
-                  );
-                })}
-              </Col>
-            </Row>
+
+          <div className="flex gap-1 !mb-2">
+            {Array.from({ length: totalStars }, (_, index) => {
+              const starIndex = index + 1;
+              return (
+                <img
+                  className="!size-6 cursor-pointer"
+                  key={starIndex}
+                  src={
+                    starIndex <= (hoverRating || rating)
+                      ? '/images/rating/star-on.png'
+                      : '/images/rating/star-off.png'
+                  }
+                  alt="star"
+                  onMouseEnter={() => handleMouseEnter(starIndex)}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={() => handleClick(starIndex)}
+                />
+              );
+            })}
           </div>
 
-          <div className={cx('follow-action')}>
+          <>
             {isFollowed ? (
               <PrimaryButton
                 color="red"
@@ -249,14 +244,13 @@ const StoryInfo = ({ story, isAuthenticated }) => {
               />
             )}
 
-            <strong className="ml4">
-              {followerCount === 0
-                ? story.follower.toLocaleString() + ' '
-                : followerCount}
+            <strong className="ml-1">
+              {story.follower.toLocaleString() || 0}
             </strong>
-            <span>Lượt theo dõi</span>
-          </div>
-          <div className={`${cx('read-action')} mt10 mb5`}>
+            <span> Lượt theo dõi</span>
+          </>
+
+          <div className="flex !gap-2 !mt-2">
             <Link to={`/story/${story.slug}/${story.id}/chap-1`}>
               <PrimaryButton color="green" title="Đọc từ đầu" />
             </Link>
@@ -265,19 +259,9 @@ const StoryInfo = ({ story, isAuthenticated }) => {
             >
               <PrimaryButton color="yellow" title="Đọc mới nhất" />
             </Link>
-            {isAuthenticated && (
-              <Link>
-                <PrimaryButton
-                  color="red"
-                  title="Đọc tiếp"
-                  icon={faAngleRight}
-                  iconPosition="right"
-                />
-              </Link>
-            )}
           </div>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };

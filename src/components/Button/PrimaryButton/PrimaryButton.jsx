@@ -1,11 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-import styles from './PrimaryButton.module.scss';
-
-const cx = classNames.bind(styles);
 
 const PrimaryButton = ({
   title,
@@ -14,36 +9,45 @@ const PrimaryButton = ({
   iconPosition,
   onClick,
   disabled,
-  type,
+  type = 'button',
   style,
 }) => {
+  const baseClasses = ['btn', `btn-${color}`];
+  if (disabled) baseClasses.push('btn-disabled');
+
   return (
     <button
-      style={style}
       type={type}
-      className={`
-            ${cx('btn', color)} ${disabled ? cx('disabled') : null}
-        `}
-      onClick={onClick}
+      style={style}
+      className={baseClasses.join(' ')}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
     >
-      {iconPosition === 'left' && icon ? (
-        <span className="mr4">
+      {icon && iconPosition === 'left' && (
+        <span className="!mr-1">
           <FontAwesomeIcon icon={icon} />
         </span>
-      ) : null}
+      )}
       {title}
-      {iconPosition === 'right' && icon ? (
-        <span className="ml4">
-          <FontAwesomeIcon icon={icon} />
+      {icon && iconPosition === 'right' && (
+        <span className="!ml-1">
+          <FontAwesomeIcon icon={icon} size="sm" />
         </span>
-      ) : null}
+      )}
     </button>
   );
 };
 
 PrimaryButton.propTypes = {
-  color: PropTypes.oneOf(['green', 'red', 'yellow', 'default', 'blue'])
-    .isRequired,
+  color: PropTypes.oneOf([
+    'red',
+    'yellow',
+    'green',
+    'default',
+    'blue',
+    'cyan',
+    'bright-blue',
+  ]).isRequired,
   title: PropTypes.string.isRequired,
   icon: PropTypes.object,
   iconPosition: PropTypes.oneOf(['right', 'left']),

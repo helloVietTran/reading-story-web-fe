@@ -1,7 +1,10 @@
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance from '@/config/axiosConfig';
 
 const levelPrefix = '/level';
 
 export const increaseExperence = async (chapterId) => {
-  await axiosInstance.patch(`${levelPrefix}/increase/${chapterId}`);
+  const { data } = await axiosInstance.patch(
+    `${levelPrefix}/increase/${chapterId}`
+  );
+  return data;
 };

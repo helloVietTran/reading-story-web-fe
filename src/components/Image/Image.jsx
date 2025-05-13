@@ -5,14 +5,14 @@ import styles from './Image.module.scss';
 
 const cx = classNames.bind(styles);
 
-const Image = ({ src, alt, key, loadingGif }) => {
+const Image = ({ src, alt, loadingGif = '/images/loading/loading.gif' }) => {
   const [isLoading, setIsLoading] = useState(true);
   const handleImageLoad = () => {
     setIsLoading(false);
   };
 
   return (
-    <div className={cx('image-container')} key={key}>
+    <div className={cx('image-container')}>
       {isLoading && (
         <img src={loadingGif} alt="Loading..." className={cx('loading-gif')} />
       )}
@@ -29,13 +29,7 @@ const Image = ({ src, alt, key, loadingGif }) => {
 Image.propTypes = {
   src: PropTypes.string.isRequired,
   alt: PropTypes.string,
-  key: PropTypes.string.isRequired,
   loadingGif: PropTypes.string,
-};
-
-Image.defaultProps = {
-  alt: 'image',
-  loadingGif: '/images/loading/loading.gif',
 };
 
 export default Image;

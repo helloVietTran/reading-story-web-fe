@@ -1,21 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
-
-import styles from './SecondaryHeading.module.scss';
-import useTheme from '../../../hooks/useTheme';
-
-const cx = classNames.bind(styles);
+import { useSelector } from 'react-redux';
 
 const SecondaryHeading = ({ title, size, top, bottom }) => {
-  const themeClassName = useTheme(cx);
+  const { darkTheme } = useSelector((state) => state.theme);
+
   return (
     <div
-      className={cx('secondary-heading', themeClassName)}
-      style={{ marginBottom: bottom + 'px', marginTop: top + 'px' }}
+      className={`${darkTheme ? 'text-gray-200' : 'text-inherit'}`}
+      style={{ marginTop: `${top}px`, marginBottom: `${bottom}px` }}
     >
-      <h3 style={{ fontSize: size + 'rem' }} className={cx('heading')}>
+      <h3
+        className="uppercase font-semibold"
+        style={{ fontSize: `${size}rem` }}
+      >
         {title}
+        <span className="block w-[60px] h-1 bg-rose-500 mt-1"></span>
       </h3>
     </div>
   );

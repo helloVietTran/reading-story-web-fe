@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import classNames from 'classnames/bind';
 import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,7 +9,6 @@ import {
   faChevronRight,
   faHeart,
   faHouseChimney,
-  faInfoCircle,
   faList,
   faTriangleExclamation,
   faXmark,
@@ -20,15 +18,13 @@ import ChapterSelect from '../ChapterSelect/ChapterSelect';
 import PrimaryButton from '@/components/Button/PrimaryButton/PrimaryButton';
 import Container from '@/components/Layout/Container/Container';
 import BreadCumb from '@/components/BreadCumb/BreadCumb';
-import ReportModal from '@/components/Modal/ReportModal/ReportModal';
+import ReportModal from '@/components/ReportModal/ReportModal';
 
-import styles from './ChapterHeader.module.scss';
 import { useSelector } from 'react-redux';
 import { followStory, unfollowStory } from '@/api/userApi';
 import { getFollowedStoryByStoryId } from '@/api/storyApi';
 import createQueryFn from '@/utils/createQueryFn';
-
-const cx = classNames.bind(styles);
+import { queryKey } from '@/config/queryKey';
 
 const ChapterHeader = ({
   story,
@@ -40,6 +36,7 @@ const ChapterHeader = ({
   handleNextChap,
   handlePrevChap,
 }) => {
+  // Refs và states
   const navRef = useRef();
   const queryClient = useQueryClient();
 
@@ -50,27 +47,29 @@ const ChapterHeader = ({
   const { storyName, storyID } = useParams();
   const { isAuthenticated } = useSelector((state) => state.auth);
 
-  // define query
+  // Truy vấn trạng thái theo dõi truyện
   const { data: myFollowedStory, isSuccess } = useQuery({
     enabled: !!storyID,
-    queryKey: ['myFollowedStory', storyID],
+    queryKey: [queryKey.MY_FOLLOWED_STORIES, storyID],
     queryFn: createQueryFn(getFollowedStoryByStoryId),
   });
 
-  // followed status
+  // Cập nhật trạng thái isFollowed khi truy vấn thành công
   useEffect(() => {
     if (isSuccess) setIsFollowed(true);
     else setIsFollowed(false);
   }, [isSuccess]);
 
-  const toastStyles = {
-    fontSize: '14px',
-  };
-  // define mutation
+  const toastStyles = { fontSize: '14px' };
+
+  // mutation
   const followMutation = useMutation({
     mutationFn: followStory,
     onSuccess: () => {
-      queryClient.invalidateQueries(['myFollowedStory', storyID]);
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.MY_FOLLOWED_STORIES],
+      });
+
       setIsFollowed(true);
     },
     onError: (error) => {
@@ -85,7 +84,10 @@ const ChapterHeader = ({
   const unfollowMutation = useMutation({
     mutationFn: unfollowStory,
     onSuccess: () => {
-      queryClient.invalidateQueries(['myFollowedStory', storyID]);
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.MY_FOLLOWED_STORIES],
+      });
+
       setIsFollowed(false);
     },
     onError: () => {
@@ -97,46 +99,41 @@ const ChapterHeader = ({
     },
   });
 
-  //****************** HANHDLE SCROLL NAVBAR****************
+  // Sự kiện xử lý scroll để gắn nav bar khi cuộn xuống
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY >= 50) {
-        setIsFixed(true);
-      } else {
-        setIsFixed(false);
-      }
+      setIsFixed(window.scrollY >= 240);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ************** HANDLE CHANGE CHAPTER **************
+  // Xử lý sự kiện nhấn phím ← hoặc → để chuyển chapter
   const handleKeyDown = (event) => {
-    if (event.key === 'ArrowRight') {
-      if (!nextBtnRef.current.classList.contains(cx('disabled'))) {
-        setCurrentChapter((prev) => prev + 1);
-      }
-    } else if (event.key === 'ArrowLeft') {
-      if (!prevBtnRef.current.classList.contains(cx('disabled'))) {
-        setCurrentChapter((prev) => prev - 1);
-      }
+    if (
+      event.key === 'ArrowRight' &&
+      !nextBtnRef.current.classList.contains('control-disabled')
+    ) {
+      setCurrentChapter((prev) => prev + 1);
+    } else if (
+      event.key === 'ArrowLeft' &&
+      !prevBtnRef.current.classList.contains('control-disabled')
+    ) {
+      setCurrentChapter((prev) => prev - 1);
     }
   };
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // chuyển hướng khi ấn vào thẻ select
+  // Chuyển chapter khi người dùng chọn từ dropdown
   const handleChangeSelectedChap = (event) => {
     setCurrentChapter(parseInt(event.target.value));
   };
 
+  // Gọi mutation theo dõi truyện
   const handleFollowStory = async (id) => {
     if (!isAuthenticated) {
       toast.error('Vui lòng đăng nhập để theo dõi truyện', {
@@ -150,7 +147,6 @@ const ChapterHeader = ({
 
   const handleUnFollowStory = async () => {
     if (!myFollowedStory) return;
-
     unfollowMutation.mutate({
       followId: myFollowedStory.id,
       storyId: storyID,
@@ -158,21 +154,23 @@ const ChapterHeader = ({
   };
 
   return (
-    <Container fill>
-      <div className={cx('chapter-header')}>
-        <BreadCumb comicName={story.name} />
-
-        <h1>
-          <div className={cx('name')}>
-            <Link>{story.name + ' '}</Link>
-            <span>-{' Chap ' + chapter.chap}</span>
-            <span className={cx('update')}>{chapter.updatedAt || ''}</span>
+    <Container>
+      <div className="pt-4 pb-0 px-4 bg-white border-b border-solid border-gray-200 overflow-hidden rounded-t-md">
+        <BreadCumb disabledTheme comicName={story.name} />
+        <h1 className="text-xl mb-2">
+          <div>
+            <span className="font-semibold capitalize">{story.name + ' '}</span>
+            <span className="text-lg">- Chap {chapter.chap}</span>
+            <span className="text-sm italic ml-3 font-medium text-gray-500">
+              Cập nhật lúc: {chapter.updatedAt || ''}
+            </span>
           </div>
         </h1>
       </div>
 
-      <div className={cx('reading-control')}>
-        <div className={cx('bug')}>
+      <div className="bg-chapter-background mb-2">
+        {/* Báo lỗi */}
+        <div className="py-3 text-center">
           <Link onClick={() => setIsOpenReportModal(true)}>
             <PrimaryButton
               color="yellow"
@@ -181,7 +179,6 @@ const ChapterHeader = ({
               iconPosition={'left'}
             />
           </Link>
-
           {isOpenReportModal && (
             <ReportModal
               onClick={setIsOpenReportModal}
@@ -190,31 +187,39 @@ const ChapterHeader = ({
             />
           )}
         </div>
-        <div className={`mb10 ${cx('alert')}`}>
-          <FontAwesomeIcon icon={faInfoCircle} />
-          <em>Sử dụng mũi tên trái (←) hoặc phải (→) để chuyển chapter</em>
+
+        <div className="mb-2 text-center bg-[#d9edf7] text-[#31708f] p-4 border border-[#bce8f1] rounded font-normal text-sm">
+          <p>
+            Kinh nghiệm sẽ được tính khi bạn đọc một chương đủ 10 giây. Hệ thống
+            sẽ đồng bộ kinh nghiệm sau mỗi 5 phút
+          </p>
+          <em>Mỗi chương cần 5 phút cool down</em>
         </div>
 
+        {/* Navigation chapter */}
         <nav
-          className={`${cx('chapter-nav')} ${isFixed ? cx('fixed') : ''}`}
+          className={`flex justify-center items-center h-[42px] ${isFixed ? 'nav-fixed' : ''}`}
           ref={navRef}
         >
-          <Link to="/" className={cx('home')}>
+          <Link to="/" className="chapter-nav-icon">
             <FontAwesomeIcon icon={faHouseChimney} />
           </Link>
 
-          <Link to={`/story/${storyName}/${storyID}`} className={cx('home')}>
+          <Link
+            to={`/story/${storyName}/${storyID}`}
+            className="chapter-nav-icon"
+          >
             <FontAwesomeIcon icon={faList} />
           </Link>
 
-          <Link
-            className={`${cx('control-btn', 'prev')} 
-                          ${currentChapter === 1 ? cx('disabled') : undefined}`}
+          {/* Chapter control */}
+          <button
+            className={`btn btn-red ${currentChapter === 1 ? 'btn-disabled' : ''}`}
             onClick={handlePrevChap}
             ref={prevBtnRef}
           >
             <FontAwesomeIcon icon={faChevronLeft} />
-          </Link>
+          </button>
 
           <ChapterSelect
             currentChapter={currentChapter}
@@ -222,20 +227,20 @@ const ChapterHeader = ({
             handleChangeSelectedChap={handleChangeSelectedChap}
           />
 
-          <Link
-            className={`${cx('control-btn', 'next')} 
-                        ${
-                          story.newestChapter === 1 ||
-                          currentChapter === story.newestChapter
-                            ? cx('disabled')
-                            : undefined
-                        }`}
+          <button
+            className={`btn btn-red mr-2 ${
+              story.newestChapter === 1 ||
+              currentChapter === story.newestChapter
+                ? 'btn-disabled'
+                : ''
+            }`}
             onClick={handleNextChap}
             ref={nextBtnRef}
           >
             <FontAwesomeIcon icon={faChevronRight} />
-          </Link>
+          </button>
 
+          {/* Theo dõi / Bỏ theo dõi */}
           {isFollowed ? (
             <PrimaryButton
               color="red"
@@ -259,6 +264,7 @@ const ChapterHeader = ({
   );
 };
 
+// Kiểm tra kiểu props
 ChapterHeader.propTypes = {
   story: PropTypes.object.isRequired,
   chapter: PropTypes.object.isRequired,

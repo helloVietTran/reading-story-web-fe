@@ -1,4 +1,4 @@
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance from '@/config/axiosConfig';
 
 const storyPrefix = '/stories';
 
@@ -8,7 +8,7 @@ export const searchStory = async (keyword) => {
       keyword,
     },
   });
-  return data.result.data; // nếu k cần phân trang
+  return data.result.data;
 };
 export const getStoriesByGender = async (gender, page = 1, size = 32) => {
   const { data } = await axiosInstance.get(`${storyPrefix}/gender`, {
@@ -28,7 +28,7 @@ export const getStories = async (page = 1, size = 32) => {
       size,
     },
   });
-  return data.result;
+  return data;
 };
 
 export const getHotStories = async (page = 1, size = 32) => {
@@ -63,7 +63,9 @@ export const getTopStories = async () => {
 };
 
 export const getMyFollowedStories = async () => {
-  const { data } = await axiosInstance.get(`${storyPrefix}/my-followed-story`);
+  const { data } = await axiosInstance.get(
+    `${storyPrefix}/my-followed-stories`
+  );
 
   return data.result;
 };
@@ -99,7 +101,7 @@ export const findAdvanced = async (
   minChapter,
   gender
 ) => {
-  const { data } = await axiosInstance.get(`${storyPrefix}/find-story`, {
+  const { data } = await axiosInstance.get(`${storyPrefix}/find-advanced`, {
     params: {
       genreCodes,
       notGenreCodes,
@@ -116,5 +118,5 @@ export const findAdvanced = async (
 export const getFeaturedStories = async () => {
   const { data } = await axiosInstance.get(`${storyPrefix}/featured-stories`);
 
-  return data.result || null;
+  return data;
 };

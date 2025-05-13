@@ -1,18 +1,16 @@
+import { useEffect, useState } from 'react';
 import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 
-import DefaultLayout from '../Layout/DefaultLayout/DefaultLayout';
-import Container from '../Layout/Container/Container';
-import Grid from '../Layout/Grid/Grid';
-import Row from '../Layout/Row/Row';
-import Col from '../Layout/Col/Col';
-import PrimaryHeading from '../Heading/PrimaryHeading/PrimaryHeading';
-import SliderHome from '../SliderHome/SliderHome';
-import StoryCard from '../StoryCard/StoryCard';
+import DefaultLayout from '@/components/Layout/DefaultLayout/DefaultLayout';
+import Container from '@/components/Layout/Container/Container';
+import PrimaryHeading from '@/components/Heading/PrimaryHeading/PrimaryHeading';
+import Slider from '@/components/Slider/Slider';
+import StoryCard from '@/components/StoryCard/StoryCard';
 import BreadCumb from '@/components/BreadCumb/BreadCumb';
-import Pagination from '../Pagination/Pagination';
-import { useEffect, useState } from 'react';
+import Pagination from '@/components/Pagination/Pagination';
 import getReadingHistoriesFromLocal from '@/utils/getReadingHistoryFromLocal';
+import StoryCardSkeleton from '@/components/StoryCardSkeleton/StoryCardSkeleton';
 
 function Main({ children, title, isBreadcrumbHidden, data }) {
   const [localReadingHistories, setLocalReadingHistories] = useState([]);
@@ -25,39 +23,38 @@ function Main({ children, title, isBreadcrumbHidden, data }) {
     <DefaultLayout>
       <Container isBackgroundVisible shouldApplyPadding>
         {!isBreadcrumbHidden ? <BreadCumb /> : null}
-        <SliderHome />
-        <Grid>
-          <Row>
-            <Col sizeLg={8} sizeXs={12}>
+        <Slider />
+        <div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Left section: 8/12 columns on large screens */}
+            <div className="lg:col-span-8">
               <PrimaryHeading
                 title={title}
-                size={2}
-                top={20}
                 icon={faAngleRight}
+                className="!mt-4"
               />
 
-              <Grid>
-                <Row>
-                  {data.data.map((item) => {
-                    return (
-                      <Col sizeMd={3} sizeSm={4} sizeXs={6} key={item.id}>
-                        <StoryCard
-                          data={item}
-                          readingHistoryData={localReadingHistories} // lịch sử đọc truyện từ local
-                        />
-                      </Col>
-                    );
-                  })}
-                </Row>
-              </Grid>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {Array.isArray(data?.data) && data.data.length > 0
+                  ? data.data.map((item) => (
+                      <StoryCard
+                        key={item.id}
+                        data={item}
+                        readingHistoryData={localReadingHistories}
+                      />
+                    ))
+                  : [...Array(4)].map((_, index) => (
+                      <StoryCardSkeleton key={index} />
+                    ))}
+              </div>
 
               <Pagination data={data} />
-            </Col>
-            <Col sizeLg={4} sizeXs={12}>
-              {children}
-            </Col>
-          </Row>
-        </Grid>
+            </div>
+
+            {/* Right section: 4/12 columns on large screens */}
+            <div className="lg:col-span-4 px-2 mt-4">{children}</div>
+          </div>
+        </div>
       </Container>
     </DefaultLayout>
   );

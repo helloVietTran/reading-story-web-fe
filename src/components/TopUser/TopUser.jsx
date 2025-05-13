@@ -1,4 +1,3 @@
-import classNames from 'classnames/bind';
 import { useQuery } from '@tanstack/react-query';
 
 import PrimaryHeading from '@/components/Heading/PrimaryHeading/PrimaryHeading';
@@ -6,41 +5,42 @@ import ListFrame from '@/components/List/ListFrame/ListFrame';
 import TextRank from '@/components/TextRank/TextRank';
 import LevelBox from '@/components/Box/LevelBox/LevelBox';
 
-import useTheme from '../../hooks/useTheme';
-import styles from './TopUser.module.scss';
 import { getTopUsers } from '@/api/userApi';
-import createQueryFn from '@/utils/createQueryFn';
+import { queryKey } from '@/config/queryKey';
+import { useSelector } from 'react-redux';
 
-const cx = classNames.bind(styles);
 function TopUser() {
-  const themeClassName = useTheme(cx);
+  const { darkTheme } = useSelector((state) => state.theme);
 
   const { data } = useQuery({
-    queryKey: ['topUsers'],
-    queryFn: createQueryFn(getTopUsers),
-    onError: (error) => {
-      console.error('Error fetching top stories:', error);
-    },
+    queryKey: [queryKey.TOP_USERS],
+    queryFn: getTopUsers,
     staleTime: 5 * 1000,
   });
+
   return (
     <ListFrame>
-      <PrimaryHeading title="Top thành viên" size={1.6} bottom={10} />
-      {data &&
-        data.map((user, index) => {
-          return (
-            <div className={cx('topUser-item', themeClassName)} key={user.id}>
+      <PrimaryHeading title="Top thành viên" />
+      <div className="mt-2 flex flex-col gap-4">
+        {Array.isArray(data) &&
+          data.map((user, index) => (
+            <div
+              key={user.id}
+              className={`relative text-sm text-gray-800 ${darkTheme ? 'dark dark:text-gray-200' : ''}`}
+            >
               <TextRank index={index} />
 
-              <div className={cx('info')}>
+              <div className="border-t border-gray-300 py-1">
                 <img
                   alt="avatar"
-                  className={cx('image')}
                   src={user.imgSrc || 'images/anonymous/anonymous.png'}
+                  className="absolute size-11 object-cover left-12 rounded-xs"
                 />
-                <div className={cx('body')}>
-                  <h3>{user.name}</h3>
 
+                <div className="pl-27 pr-2">
+                  <h3 className="text-sm font-normal truncate mb-1">
+                    {user.name}
+                  </h3>
                   <LevelBox
                     level={user.level.level}
                     process={user.level.process * 100}
@@ -49,8 +49,8 @@ function TopUser() {
                 </div>
               </div>
             </div>
-          );
-        })}
+          ))}
+      </div>
     </ListFrame>
   );
 }

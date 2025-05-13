@@ -1,4 +1,4 @@
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance from '@/config/axiosConfig';
 
 const userPrefix = '/users';
 
@@ -8,13 +8,13 @@ export const createUser = async (data) => {
 };
 
 export const getMyInfo = async () => {
-  const res = await axiosInstance.get(`${userPrefix}/my-info`);
+  const { data } = await axiosInstance.get(`${userPrefix}/my-info`);
 
-  return res.data.result;
+  return data.result;
 };
 
 export const getTopUsers = async () => {
-  const res = await axiosInstance.get(`${userPrefix}/top-user`);
+  const res = await axiosInstance.get(`${userPrefix}/top-users`);
 
   return res.data.result;
 };
@@ -75,4 +75,16 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (data) => {
   console.log(data);
   await axiosInstance.patch(`${userPrefix}/reset-password`, data);
+};
+
+export const fetchMyInfo = async () => {
+  const { data } = await axiosInstance.get(`${userPrefix}/my-info`);
+
+  return data;
+};
+
+export const getUser = async (userId) => {
+  const { data } = await axiosInstance.get(`${userPrefix}/${userId}`);
+
+  return data.result;
 };

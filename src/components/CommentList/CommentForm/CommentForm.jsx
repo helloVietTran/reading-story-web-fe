@@ -1,17 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import classNames from 'classnames/bind';
 import { useSelector } from 'react-redux';
-
-import PrimaryButton from '../../Button/PrimaryButton/PrimaryButton';
-
-import styles from './CommentForm.module.scss';
 import toast from 'react-hot-toast';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
+
+import PrimaryButton from '@/components/Button/PrimaryButton/PrimaryButton';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postComment } from '@/api/commentApi';
-
-const cx = classNames.bind(styles);
+import { queryKey } from '@/config/queryKey';
 
 function CommentForm({
   hasDistance = false,
@@ -20,12 +17,13 @@ function CommentForm({
   replyTo,
   onClose,
 }) {
-  const queryClient = useQueryClient();
   const [content, setContent] = useState('');
   const inputRef = useRef();
-  const { storyID } = useParams();
 
+  const { storyID } = useParams();
+  const queryClient = useQueryClient();
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const darkTheme = useSelector((state) => state.theme.darkTheme);
 
   //define mutation
   const style = {
@@ -39,7 +37,9 @@ function CommentForm({
         style,
       });
       setContent('');
-      queryClient.invalidateQueries(['storyComments', storyID]);
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.commentsOfStory(storyID)],
+      });
       if (onClose && parentCommentId) onClose(parentCommentId);
     },
     onError: () => {
@@ -80,11 +80,13 @@ function CommentForm({
 
   return (
     <div
-      className={
-        hasDistance ? cx('comment-form', 'distance') : cx('comment-form')
-      }
+      className={classNames(
+        'text-sm text-gray-800',
+        hasDistance && 'pl-[55px] mt-3',
+        darkTheme ? 'dark' : ''
+      )}
     >
-      <div className={cx('comment-input')}>
+      <div className="w-full">
         <textarea
           type="text"
           value={content}
@@ -92,10 +94,15 @@ function CommentForm({
           placeholder={replyTo ? `Trả lời ${replyTo}` : 'Viết bình luận...'}
           onChange={(e) => setContent(e.target.value)}
           ref={inputRef}
+          className="w-full min-h-[100px] p-3 text-base text-gray-800 dark:text-gray-200 border border-gray-300 rounded-lg resize-y outline-none  focus:border-blue-500 dark:focus:border-yellow-500 focus:shadow-[0_0_8px_rgba(74,144,226,0.4)] placeholder:text-gray-400 placeholder:italic"
         />
       </div>
-      <div className="mt4" style={{ display: 'flex', gap: '10px' }}>
-        <PrimaryButton color="blue" title="Gửi" onClick={handleSubmitComment} />
+      <div className="mt-1 flex gap-2">
+        <PrimaryButton
+          color={darkTheme ? 'yellow' : 'blue'}
+          title="Gửi"
+          onClick={handleSubmitComment}
+        />
         <PrimaryButton
           color="default"
           title="Xóa"

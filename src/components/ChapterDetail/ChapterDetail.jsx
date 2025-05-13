@@ -1,22 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import classNames from 'classnames/bind';
 import {
   faChevronRight,
   faChevronLeft,
 } from '@fortawesome/free-solid-svg-icons';
+import { useSelector } from 'react-redux';
 
 import BreadCumb from '@/components/BreadCumb/BreadCumb';
-import PrimaryButton from '../Button/PrimaryButton/PrimaryButton';
-import Container from '../Layout/Container/Container';
+import PrimaryButton from '@/components/Button/PrimaryButton/PrimaryButton';
+import Container from '@/components/Layout/Container/Container';
 import ChapterImageList from './ChapterImageList/ChapterImageList';
 import ChapterHeader from './ChapterHeader/ChapterHeader';
-import CommentList from '../CommentList/CommentList';
-
-import styles from './ChapterDetail.module.scss';
-import useTheme from '@/hooks/useTheme';
-import createQueryFn from '@/utils/createQueryFn';
+import CommentList from '@/components/CommentList/CommentList';
 import {
   getChapterByStoryIdAndChap,
   getChapterResource,
@@ -26,16 +22,14 @@ import { getStoryById } from '@/api/storyApi';
 import { getCommentsByChapterId } from '@/api/commentApi';
 import addReadingHistoryOnLocal from '@/utils/addReadingHistoryOnLocal';
 import { increaseExperence } from '@/api/levelApi';
-import { useSelector } from 'react-redux';
 import { updateReadingHistory } from '@/api/readingHistoryApi';
-
-const cx = classNames.bind(styles);
+import { queryKey } from '@/config/queryKey';
 
 function ChapterDetail() {
   const nextBtnRef = useRef();
   const prevBtnRef = useRef();
 
-  const themeClassName = useTheme(cx);
+  const { darkTheme } = useSelector((state) => state.theme);
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const navigate = useNavigate();
@@ -43,56 +37,66 @@ function ChapterDetail() {
   const [searchParams] = useSearchParams();
   const page = searchParams.get('page') || 1;
 
+  // Lấy số chapter hiện tại từ URL (dạng: chap-1 -> lấy 1)
   const [currentChapter, setCurrentChapter] = useState(+chap.slice(5));
 
-  // get story
-  const { data: story } = useQuery({
+  // query
+  const { data: story, isError: isNotFoundStory } = useQuery({
     enabled: !!storyID,
-    queryKey: ['story', storyID],
-    queryFn: createQueryFn(getStoryById),
+    queryKey: [queryKey.storyDetail(storyID), storyID],
+    queryFn: () => getStoryById(storyID),
     staleTime: 5 * 60 * 1000,
   });
-  // get chapter
-  const { data: chapter } = useQuery({
+
+  if (isNotFoundStory) {
+    navigate('/not-found');
+  }
+
+  const { data: chapter, isError: isNotFoundChapter } = useQuery({
     enabled: !!storyID && !!chap.slice(5),
     queryKey: ['chapter', storyID, parseInt(chap.slice(5))],
-    queryFn: createQueryFn(getChapterByStoryIdAndChap),
+    queryFn: () => getChapterByStoryIdAndChap(storyID, parseInt(chap.slice(5))),
   });
-  // get resource
+
+  if (isNotFoundChapter) {
+    navigate('/not-found');
+  }
+
+  // ảnh
   const { data: resource } = useQuery({
     enabled: !!chapter?.id,
-    queryKey: ['chapterResource', chapter?.id],
-    queryFn: createQueryFn(getChapterResource),
+    queryKey: [queryKey.resourcesOfChapter(chapter?.id), chapter?.id],
+    queryFn: () => getChapterResource(chapter?.id),
   });
 
-  // get comment
   const { data: comments } = useQuery({
     enabled: !!chapter?.id,
-    queryKey: ['storyComments', chapter?.id, page],
-    queryFn: createQueryFn(getCommentsByChapterId),
-  });
-  // increase view mutation
-  const increaseViewMutation = useMutation({
-    mutationFn: increaseView,
-    retryDelay: () => 20000,
-  });
-  // increase level
-  const increaseExperenceMutation = useMutation({
-    mutationFn: increaseExperence,
-    retryDelay: () => 20000,
+    queryKey: [queryKey.commentsOfChapter(chapter?.id), chapter?.id, page],
+    queryFn: () => getCommentsByChapterId(chapter?.id, page),
   });
 
-  //add reading history in server
+  //  MUTATION
+  const increaseViewMutation = useMutation({
+    mutationFn: increaseView,
+    onSuccess: (data) => {
+      console.log(data.result);
+    },
+  });
+
+  const increaseExperenceMutation = useMutation({
+    mutationFn: increaseExperence,
+    onSuccess: (data) => {
+      console.log(data.result);
+    },
+  });
+
   const updateReadingHistoryMutation = useMutation({
     mutationFn: updateReadingHistory,
-    retryDelay: () => 20000,
   });
 
   useEffect(() => {
-    // khi đọc đủ 10 giây mới tăng view
-    // lưu lịch sử đọc truyện trên storage
-
     const delay = setTimeout(() => {
+      // lưu lịch sử đọc truyện trên local storage
       addReadingHistoryOnLocal(
         {
           id: story.id,
@@ -106,41 +110,34 @@ function ChapterDetail() {
         +chap.slice(5)
       );
 
+      // tăng view cho chapter hiện tại
       increaseViewMutation.mutate({
         storyId: storyID,
         chapterId: chapter?.id,
       });
 
+      // Ghi lại lịch sử đọc truyện
       updateReadingHistoryMutation.mutate({
         storyId: storyID,
         chapterRead: +chap.slice(5),
       });
 
+      // đã xscs thực thì tăng exp cho người dùng
       if (isAuthenticated) increaseExperenceMutation.mutate(chapter?.id);
     }, 10000);
 
-    return () => clearTimeout(delay);
-  }, [
-    story,
-    storyID,
-    chapter,
-    chap,
-    increaseViewMutation,
-    increaseExperenceMutation,
-    updateReadingHistoryMutation,
-    isAuthenticated,
-  ]);
+    return () => clearTimeout(delay); // clear nếu chưa đọc đủ 10s
+  }, [storyID, chap, isAuthenticated]);
 
-  //handle navigate when changing chapter
+  //  HANDLE CHUYỂN CHAPTER
   useEffect(() => {
     navigate(`/story/${storyName}/${storyID}/chap-${currentChapter}`);
   }, [currentChapter, navigate, storyID, storyName]);
 
-  // ******* HANDLE CHANGE CHAPTER BUTTON *******
-
   const handleNextChap = () => {
     const nextChapter = currentChapter + 1;
-    if (!nextBtnRef.current.classList.contains(cx('disabled'))) {
+    // Kiểm tra nếu button không bị disable thì chuyển chap
+    if (!nextBtnRef.current.classList.contains('control-disabled')) {
       setCurrentChapter(nextChapter);
       window.scrollTo(0, 0);
     }
@@ -148,16 +145,17 @@ function ChapterDetail() {
 
   const handlePrevChap = () => {
     const prevChapter = currentChapter - 1;
-    if (!prevBtnRef.current.classList.contains(cx('disabled'))) {
+    if (!prevBtnRef.current.classList.contains('control-disabled')) {
       setCurrentChapter(prevChapter);
       window.scrollTo(0, 0);
     }
   };
 
   return (
-    <div className={`${cx('chapter-detail')} ${themeClassName}`}>
+    <div className={`py-10 min-h-[400px] bg-[#111] ${darkTheme ? '' : ''}`}>
       {story && chapter && resource && (
         <>
+          {/* Header bao gồm tên truyện, chap, chức năng theo dõi, báo lỗi,... */}
           <ChapterHeader
             story={story}
             chapter={chapter}
@@ -171,10 +169,12 @@ function ChapterDetail() {
 
           <ChapterImageList data={resource} />
 
+          {/* Navigation ở dưới cùng (next/prev chap) */}
           <Container
-            backgroundColor={themeClassName === '' ? '#fff' : '#252525'}
+            backgroundColor="#f6f7f9"
+            className="rounded-none rounded-b-md"
           >
-            <div className={cx('reading-nav-bottom')}>
+            <div className="flex justify-center p-2 gap-1 overflow-hidden">
               <PrimaryButton
                 disabled={story.newestChapter === currentChapter + 1}
                 color="red"
@@ -183,7 +183,6 @@ function ChapterDetail() {
                 iconPosition="left"
                 title="Chap trước"
               />
-              <span className="mr8"></span>
               <PrimaryButton
                 disabled={
                   story.newestChapter === 1 ||
@@ -196,14 +195,9 @@ function ChapterDetail() {
                 title="Chap sau"
               />
             </div>
-            <div className="pt15"></div>
-            <BreadCumb comicName={story?.name} />
-          </Container>
 
-          <Container
-            backgroundColor={themeClassName === '' ? '#f6f7f8' : '#252525'}
-          >
-            <div className="pb15">
+            <div className="p-4">
+              <BreadCumb disabledTheme comicName={story?.name} />
               {comments && <CommentList data={comments.data} />}
             </div>
           </Container>

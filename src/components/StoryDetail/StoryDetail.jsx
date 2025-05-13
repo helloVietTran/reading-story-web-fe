@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import classNames from 'classnames/bind';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -10,27 +9,21 @@ import {
   faAngleLeft,
 } from '@fortawesome/free-solid-svg-icons';
 import { faFileText } from '@fortawesome/free-regular-svg-icons';
+import toast from 'react-hot-toast';
 
-import TopStory from '../TopStory/TopStory';
+import TopStory from '@/components/TopStory/TopStory';
 import BreadCumb from '@/components/BreadCumb/BreadCumb';
 import CommentList from '@/components/CommentList/CommentList';
 import StoryInfo from './StoryInfo/StoryInfo';
 import ChapterList from './ChapterList/ChapterList';
-import Grid from '../Layout/Grid/Grid';
-import Row from '@/components/Layout/Row/Row';
-import Col from '@/components/Layout/Col/Col';
-
-import styles from './StoryDetail.module.scss';
-import useTheme from '@/hooks/useTheme';
 import createQueryFn from '@/utils/createQueryFn';
 import { getStoryById } from '@/api/storyApi';
 import { getChaptersBystoryId } from '@/api/chapterApi';
 import { getCommentsByStoryId } from '@/api/commentApi';
-import toast from 'react-hot-toast';
+import { queryKey } from '@/config/queryKey';
 
-const cx = classNames.bind(styles);
 function StoryDetail() {
-  const themeClassName = useTheme(cx);
+  const { darkTheme } = useSelector((state) => state.theme);
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [seeMore, setSeeMore] = useState(false); // see more description
@@ -43,8 +36,8 @@ function StoryDetail() {
 
   const storyQuery = useQuery({
     enabled: !!storyID,
-    queryKey: ['story', storyID],
-    queryFn: createQueryFn(getStoryById),
+    queryKey: [queryKey.storyDetail(storyID), storyID],
+    queryFn: () => getStoryById(storyID),
     onError: (error) => {
       console.log(error);
     },
@@ -69,7 +62,7 @@ function StoryDetail() {
 
   // get comment of story
   const { data: comments } = useQuery({
-    queryKey: ['storyComments', storyID, page],
+    queryKey: [queryKey.commentsOfStory(storyID), storyID, page],
     queryFn: createQueryFn(getCommentsByStoryId),
   });
 
@@ -82,68 +75,69 @@ function StoryDetail() {
   }
 
   return (
-    <div className={cx('story-detail', themeClassName)}>
+    <div className={darkTheme ? 'dark dark:text-gray-200' : ''}>
       {storyQuery.data && (
-        <Grid>
-          <Row>
-            <Col sizeLg={8} sizeMd={12}>
-              <BreadCumb comicName={storyQuery.data.name} />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-8 col-span-12">
+            <BreadCumb comicName={storyQuery.data.name} />
 
-              <h1 className={cx('title')}>{storyQuery.data.name}</h1>
-              <time className={cx('time-text')}>
-                [ Cập nhật lúc: {storyQuery.data.updatedAt}]
-              </time>
+            <h1 className="!text-2xl text-center uppercase font-medium">
+              {storyQuery.data.name}
+            </h1>
+            <time className="time-text !pb-2">
+              [ Cập nhật lúc: {storyQuery.data.updatedAt}]
+            </time>
 
-              <StoryInfo
-                story={storyQuery.data}
-                isAuthenticated={isAuthenticated}
-              />
+            <StoryInfo
+              story={storyQuery.data}
+              isAuthenticated={isAuthenticated}
+            />
 
-              <Row>
-                <div className={cx('description')}>
-                  <h3>
-                    <FontAwesomeIcon icon={faFileText} className="mr4" />
-                    Nội dung
-                  </h3>
+            <div>
+              <h3 className="blue-detail-heading">
+                <FontAwesomeIcon icon={faFileText} className="!mr-2" />
+                Nội dung
+              </h3>
 
-                  <p className={seeMore ? cx('see-more') : ''}>
-                    {storyQuery.data.description}
-                    <span
-                      className={!seeMore ? cx('mask-gradient') : ''}
-                    ></span>
-                  </p>
-                  <Link onClick={() => setSeeMore(!seeMore)}>
-                    {!seeMore && (
-                      <FontAwesomeIcon icon={faAngleLeft} className="mr4" />
-                    )}
-                    {!seeMore ? 'Xem thêm' : 'Thu gọn'}
-                    {seeMore && (
-                      <FontAwesomeIcon icon={faAngleRight} className="ml4" />
-                    )}
-                  </Link>
-                </div>
+              <p
+                className={`relative text-sm overflow-hidden text-ellipsis ${
+                  seeMore ? 'line-clamp-none' : 'line-clamp-3'
+                }`}
+              >
+                {storyQuery.data.description}
+                <span className={!seeMore ? 'mask-gradient' : ''}></span>
+              </p>
+              <span
+                className="flex items-center gap-1 cursor-pointer text-sm  hover:underline"
+                onClick={() => setSeeMore(!seeMore)}
+              >
+                {!seeMore && <FontAwesomeIcon icon={faAngleLeft} size="xs" />}
+                {!seeMore ? 'Xem thêm' : 'Thu gọn'}
+                {seeMore && <FontAwesomeIcon icon={faAngleRight} size="xs" />}
+              </span>
+            </div>
 
-                <div className={cx('chapter-list')}>
-                  <h2>
-                    <FontAwesomeIcon icon={faList} className="mr4" />
-                    Danh sách chương
-                  </h2>
-                </div>
+            <div>
+              <h3 className="blue-detail-heading">
+                <FontAwesomeIcon icon={faList} className="!mr-2" />
+                Danh sách chương
+              </h3>
+            </div>
 
-                <ChapterList
-                  data={chaptersQuery.data}
-                  setViewMore={setViewMore}
-                  viewMore={viewMore}
-                />
-              </Row>
-              {comments && <CommentList data={comments.data} />}
-            </Col>
+            <ChapterList
+              data={chaptersQuery.data}
+              setViewMore={setViewMore}
+              viewMore={viewMore}
+            />
 
-            <Col sizeLg={4} sizeXs={12}>
-              <TopStory />
-            </Col>
-          </Row>
-        </Grid>
+            {comments && <CommentList data={comments.data} />}
+          </div>
+
+          <div className="lg:col-span-4 col-span-12">
+            <TopStory />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,28 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 
-import NavBarModal from '@/components/Modal/NavBarModal/NavBarModal';
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/NavBar/NavBar';
+import Navbar from '@/components/Navbar/Navbar';
 import Sort from '@/components/Sort/Sort';
 import Category from '@/components/Category/Category';
 import Footer from '@/components/Footer/Footer';
 import BreadCumb from '@/components/BreadCumb/BreadCumb';
 import DefaultLayout from '@/components/Layout/DefaultLayout/DefaultLayout';
 import Container from '@/components/Layout/Container/Container';
-import Grid from '@/components/Layout/Grid/Grid';
-import Row from '@/components/Layout/Row/Row';
-import Col from '@/components/Layout/Col/Col';
-
 import { options } from '@/config/filter';
 import { useQuery } from '@tanstack/react-query';
-import createQueryFn from '@/utils/createQueryFn';
 import { findStory } from '@/api/storyApi';
+import { queryKey } from '@/config/queryKey';
 
 function FindStory() {
-  const isOpen = useSelector((state) => state.navbar.isOpen);
-
   const [genreCode, setGenreCode] = useState('');
 
   const navigate = useNavigate();
@@ -46,37 +38,30 @@ function FindStory() {
     window.scrollTo(0, 0);
   }, []);
 
-  const { data } = useQuery({
-    queryKey: ['filterStory', genreCode, status, sort, keyword],
-    queryFn: createQueryFn(findStory),
-    retryDelay: () => 3000,
+  const { data, isLoading } = useQuery({
+    queryKey: [queryKey.FIND_STORY, genreCode, status, sort, keyword],
+    queryFn: () => findStory(genreCode, status, sort, keyword),
   });
+
   return (
     <>
       <Head />
-      {isOpen ? (
-        <NavBarModal />
-      ) : (
-        <>
-          <NavBar />
-          <DefaultLayout>
-            <Container isBackgroundVisible shouldApplyPadding>
-              <BreadCumb />
-              <Grid>
-                <Row>
-                  <Col sizeLg={8}>
-                    <Sort data={data} />
-                  </Col>
-                  <Col sizeLg={4}>
-                    <Category setGenreCode={setGenreCode} />
-                  </Col>
-                </Row>
-              </Grid>
-            </Container>
-          </DefaultLayout>
-          <Footer />
-        </>
-      )}
+      <Navbar />
+
+      <DefaultLayout>
+        <Container isBackgroundVisible shouldApplyPadding>
+          <BreadCumb />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-8">
+              <Sort data={data} isLoading={isLoading} />
+            </div>
+            <div className="lg:col-span-4">
+              <Category setGenreCode={setGenreCode} />
+            </div>
+          </div>
+        </Container>
+      </DefaultLayout>
+      <Footer />
     </>
   );
 }

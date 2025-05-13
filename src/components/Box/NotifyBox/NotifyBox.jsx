@@ -1,16 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
 
-import styles from './NotifyBox.module.scss';
+const NotifyBox = ({ content, color, bottom = 0, top = 0 }) => {
+  const baseClass = 'content-box';
+  const colorClass =
+    color === 'red'
+      ? 'content-box-red'
+      : color === 'green'
+        ? 'content-box-green'
+        : '';
 
-const cx = classNames.bind(styles);
-
-const NotifyBox = ({ content, color, bottom, top }) => {
   return (
     <p
-      className={cx('notify-box', color + '-box')}
-      style={{ marginBottom: bottom + 'px', marginTop: top + 'px' }}
+      className={`${baseClass} ${colorClass}`}
+      style={{ marginBottom: `${bottom}px`, marginTop: `${top}px` }}
     >
       {content}
     </p>

@@ -1,18 +1,26 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import classNames from 'classnames/bind';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faComment, faEye, faHeart } from '@fortawesome/free-solid-svg-icons';
+import {
+  faComment,
+  faEye,
+  faHeart,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import styles from './StoryCard.module.scss';
-import useTheme from '@/hooks/useTheme';
 import formatNumber from '@/utils/formatNumber';
+import { unfollowStory } from '@/api/userApi';
+import toast from 'react-hot-toast';
+import { queryKey } from '@/config/queryKey';
 
-const cx = classNames.bind(styles);
-
-function StoryCard({ data, readingHistoryData }) {
-  const themeClassName = useTheme(cx);
+// data có type StoryReponse
+function StoryCard({ data, readingHistoryData, followId = '' }) {
+  const { darkTheme } = useSelector((state) => state.theme);
+  const queryClient = useQueryClient();
 
   const hasReadChapter = useMemo(
     () => (storyId, chapter) => {
@@ -23,27 +31,62 @@ function StoryCard({ data, readingHistoryData }) {
     },
     [readingHistoryData]
   );
+
+  const unfollowMutation = useMutation({
+    mutationFn: unfollowStory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.MY_FOLLOWED_STORIES],
+      });
+
+      toast.success('Bỏ theo dõi thành công!', {
+        style: {
+          fontSize: '14px',
+        },
+        duration: 3000,
+        position: 'top-center',
+      });
+    },
+    onError: () => {
+      toast.error('Có lỗi xảy ra. Vui lòng quay lại sau!', {
+        style: {
+          fontSize: '14px',
+        },
+        duration: 3000,
+        position: 'top-center',
+      });
+    },
+  });
+
+  const handleUnfollowStory = () => {
+    unfollowMutation.mutate({ storyId: data.id, followId });
+  };
+
   return (
-    <div className={`${cx('card-item')}`}>
-      <div className={cx('card-body')}>
+    <div className={`!mt-3 ${darkTheme ? 'dark' : ''}`}>
+      <div className="relative">
         <Link to={`/story/${data.slug}/${data.id}`}>
           {data.hot && <span className="icon-hot"></span>}
-          <img className={cx('card-img')} src={data.imgSrc} alt="story-img" />
+          <img
+            className="object-cover w-full h-[200px] border border-gray-300 rounded shadow-sm"
+            src={data.imgSrc}
+            alt={data.slug}
+          />
         </Link>
 
-        <div className={cx('card-info')}>
-          <div className={cx('group')}>
-            <FontAwesomeIcon icon={faEye} className={cx('icon')} />
+        <div className="absolute inset-x-0 bottom-0 flex justify-around h-[25px] px-1 bg-black opacity-65 leading-[25px]">
+          <div className="flex gap-1 items-center px-1 text-white text-sm">
+            <FontAwesomeIcon icon={faEye} />
             <span>{formatNumber(data.viewCount)}</span>
           </div>
 
-          <div className={cx('group')}>
-            <FontAwesomeIcon icon={faComment} className={cx('icon')} />
+          <div className="flex gap-1 items-center px-1 text-white text-sm">
+            <FontAwesomeIcon icon={faComment} />
             <span>{formatNumber(data.commentCount)}</span>
           </div>
 
-          <div className={cx('group')}>
-            <FontAwesomeIcon icon={faHeart} className={cx('icon')} />
+          <div className="flex gap-1 items-center px-1 text-white text-sm">
+            <FontAwesomeIcon icon={faHeart} />
             <span>{formatNumber(data.follower)}</span>
           </div>
         </div>
@@ -51,38 +94,56 @@ function StoryCard({ data, readingHistoryData }) {
 
       <Link
         to={`/story/${data.slug}/${data.id}`}
-        className={`${cx('name')} ${themeClassName}`}
+        className="link-colored capitalize"
       >
         {data.name}
       </Link>
 
-      <ul className={`${cx('chapter-list')} ${themeClassName}`}>
-        {data.chapters ? (
+      {followId ? (
+        <div className="text-xs flex items-center justify-end mt-1">
+          <span
+            className="text-red-600 flex items-center gap-1 cursor-pointer hover:underline"
+            onClick={handleUnfollowStory}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+            Bỏ theo dõi
+          </span>
+        </div>
+      ) : (
+        <></>
+      )}
+      <ul>
+        {data?.chapters ? (
           data.chapters.map((chapter) => {
             return (
               <li
                 className={
                   hasReadChapter(data.id, chapter.chap)
-                    ? cx('chapter-link', 'read')
-                    : cx('chapter-link')
+                    ? 'read-chapter'
+                    : 'unread-chapter'
                 }
                 key={chapter.id}
               >
-                <Link to={`/story/${data.slug}/${data.id}/${chapter.slug}`}>
+                <Link
+                  to={`/story/${data.slug}/${data.id}/${chapter.slug}`}
+                  className="text-[13px] font-normal theme-hover"
+                >
                   Chap {chapter.chap}
                 </Link>
-                <span className={cx('update')}>{chapter.createdAt}</span>
+                <span className="text-[11px] italic font-normal">
+                  {chapter.createdAt}
+                </span>
               </li>
             );
           })
         ) : (
           <li
             className={
-              hasReadChapter(data.id, data.newestChapter)
-                ? cx('chapter-link', 'read')
-                : cx('chapter-link')
+              hasReadChapter(data.id, chapter.chap)
+                ? 'read-chapter'
+                : 'unread-chapter'
             }
-            key={data.newestChapter}
+            key={data.id}
           >
             <span>Chap mới nhất</span>
             <Link
@@ -100,5 +161,13 @@ function StoryCard({ data, readingHistoryData }) {
 StoryCard.propTypes = {
   data: PropTypes.object.isRequired,
   readingHistoryData: PropTypes.array,
+  followId: PropTypes.string,
 };
 export default StoryCard;
+
+/** Nút đánh dấu đã đọc
+ *   <span className="text-green-600 flex items-center gap-1 cursor-pointer hover:underline">
+            <FontAwesomeIcon icon={faCheck} />
+            Đã đọc
+          </span>
+ */

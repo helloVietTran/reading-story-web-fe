@@ -1,18 +1,14 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import classNames from 'classnames/bind';
-
-import styles from './Category.module.scss';
-import useTheme from '@/hooks/useTheme';
-import { options } from '@/config/filter';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-const cx = classNames.bind(styles);
+import { options } from '@/config/filter';
 
 function Category({ setGenreCode }) {
+  const { darkTheme } = useSelector((state) => state.theme);
   const location = useLocation();
-  const themeClassName = useTheme(cx);
 
   useEffect(() => {
     if (location.pathname === '/find-story') setGenreCode('');
@@ -23,22 +19,25 @@ function Category({ setGenreCode }) {
       });
   }, [location, setGenreCode, options]);
 
-  const checkLinkActive = ({ isActive }) => (isActive ? cx('active') : null);
+  const checkLinkActive = ({ isActive }) =>
+    isActive ? '!text-main-purple' : 'hover:!text-main-purple';
 
   return (
     <>
-      <div className={`${cx('category')} ${themeClassName}`}>
-        <h2>Thể loại</h2>
-        <ul className={cx('category-list')}>
-          {options.map((genre) => {
-            return (
-              <li key={uuidv4()}>
-                <NavLink to={genre.path} className={checkLinkActive}>
-                  {genre.name}
-                </NavLink>
-              </li>
-            );
-          })}
+      <div
+        className={`${darkTheme ? 'dark' : ''} text-[#333] !p-3 border border-[#ddd] rounded-sm category`}
+      >
+        <h2 className="text-base text-light-blue-heading dark:text-orange-bright font-semibold !pb-2">
+          Thể loại
+        </h2>
+        <ul className="category-list dark:text-gray-200">
+          {options.map((genre) => (
+            <li key={uuidv4()}>
+              <NavLink to={genre.path} className={checkLinkActive}>
+                {genre.name}
+              </NavLink>
+            </li>
+          ))}
         </ul>
       </div>
     </>

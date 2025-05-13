@@ -1,10 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
 import { useNavigate } from 'react-router-dom';
-
-import styles from './GenreSelect.module.scss';
-const cx = classNames.bind(styles);
 
 const GenreSelect = ({ options }) => {
   const navigate = useNavigate();
@@ -19,7 +15,7 @@ const GenreSelect = ({ options }) => {
   };
 
   return (
-    <select className={cx('genre-select')} onChange={handleChange}>
+    <select className="genre-select" onChange={handleChange}>
       {options.map((option) => (
         <option key={option.name} value={option.name}>
           {option.name}
