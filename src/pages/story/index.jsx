@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Head from '@/components/Head/Head';
 import Footer from '@/components/Footer/Footer';
 import StoryDetail from '@/components/StoryDetail/StoryDetail';
@@ -15,7 +15,7 @@ function Story() {
   return (
     <>
       <Head />
-      <NavBar />
+      <Navbar />
       <DefaultLayout>
         <Container isBackgroundVisible shouldApplyPadding>
           <StoryDetail />

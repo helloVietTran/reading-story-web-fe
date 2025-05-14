@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/Navbar/Navbar';
 import Main from '@/components/Main/Main';
 import Footer from '@/components/Footer/Footer';
 import TopStory from '@/components/TopStory/TopStory';
 import { getHotStories } from '@/api/storyApi';
 import { queryKey } from '@/config/queryKey';
 import SplashScreen from '@/components/SplashScreen/SplashScreen';
+import Navbar from '@/components/Navbar/Navbar';
 
 function Hot() {
   const [searchParams] = useSearchParams();
@@ -29,7 +29,7 @@ function Hot() {
     <>
       {storiesQuery.isLoading && <SplashScreen />}
       <Head />
-      <NavBar />
+      <Navbar />
       <Main title="Truyện hot nhất" data={storiesQuery.data}>
         <TopStory />
       </Main>

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Head from '@/components/Head/Head';
 import Footer from '@/components/Footer/Footer';
 import UserDetail from '@/components/UserDetail/UserDetail';
@@ -12,7 +12,7 @@ function UserPage() {
     <>
       <Head />
 
-      <NavBar />
+      <Navbar />
       <UserDetail />
       <Footer />
     </>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Register from '@/components/Register/Register';
 import Footer from '@/components/Footer/Footer';
 
@@ -13,7 +13,7 @@ function RegisterPage() {
   return (
     <>
       <Head />
-      <NavBar />
+      <Navbar />
       <Register />
       <Footer />
     </>

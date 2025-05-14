@@ -83,7 +83,7 @@ function SliderHome() {
         <Slider {...settings}>
           {isLoading
             ? Array.from({ length: 5 }).map((_, index) => (
-                <div key={index}>
+                <div key={index} className='px-2'>
                   <StoryCardSkeleton />
                 </div>
               ))

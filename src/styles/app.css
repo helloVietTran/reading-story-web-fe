@@ -232,3 +232,60 @@ hr {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;     /* Firefox */
 }
+
+.nav-list {
+  display: flex;
+}
+
+.nav-list li {
+  color: #333;
+}
+
+.nav-list li:hover {
+  background-color: #fff;
+  color: #ae4ad9;
+}
+
+.nav-list.dark li:hover {
+  background-color: #333;
+  transition: all 0.2s;
+}
+
+/*Nav bar*/
+.nav-list .nav-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  border-right: 1px solid #ddd;
+  padding: 0 10px;
+  text-transform: uppercase;
+  font-size: 14px;
+  color: inherit;
+}
+
+.nav-list li:first-child .nav-link {
+  padding: 0 15px;
+}
+
+.nav-list a.dark {
+  border-right: 1px solid #ddd;
+  color: #D3D3D3;
+}
+
+.nav-list a.dark:hover {
+  color: #ff9601;
+  background-color: transparent;
+  transition: all 0.2s;
+}
+
+.nav-list a.active {
+  color: #ae4ad9;
+  background-color: #fff;
+  transition: all 0.2s;
+}
+
+.nav-list .active.dark {
+  color: #ff9601;
+  background-color: #333;
+}

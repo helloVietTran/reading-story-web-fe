@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
 import ResetPassword from '@/components/ResetPassword/ResetPassword';
 
@@ -22,7 +22,7 @@ function ResetPasswordPage() {
   return (
     <>
       <Head />
-      <NavBar />
+      <Navbar />
       <ResetPassword token={ticket} userId={userId} />
       <Footer />
     </>

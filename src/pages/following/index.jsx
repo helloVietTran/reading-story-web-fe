@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
 import FollowStory from '@/components/FollowingStory/FollowingStory';
 
@@ -13,7 +13,7 @@ function Following() {
   return (
     <>
       <Head />
-      <NavBar />
+      <Navbar />
       <FollowStory />
       <Footer />
     </>

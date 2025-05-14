@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Main from '@/components/Main/Main';
 import Footer from '@/components/Footer/Footer';
 import TopStory from '@/components/TopStory/TopStory';
@@ -28,7 +28,7 @@ function GirlStory() {
     <>
       <Head />
       {storiesQuery.isLoading && <SplashScreen />}
-      <NavBar />
+      <Navbar />
 
       <Main title="Truyện con gái" data={storiesQuery.data}>
         <TopStory />

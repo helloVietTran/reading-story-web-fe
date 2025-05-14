@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Head from '@/components/Head/Head';
 import Footer from '@/components/Footer/Footer';
 import ChapterDetail from '@/components/ChapterDetail/ChapterDetail';
@@ -12,7 +12,7 @@ function Chapter() {
   return (
     <>
       <Head />
-      <NavBar isPreventFixed={true} />
+      <Navbar isPreventFixed={true} />
       <ChapterDetail />
       <Footer />
     </>

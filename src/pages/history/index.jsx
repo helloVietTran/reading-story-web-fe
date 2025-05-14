@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import Head from '@/components/Head/Head';
-import NavBar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
 import ReadingHistory from '@/components/ReadingHistory/ReadingHistory';
 
@@ -13,8 +13,7 @@ function History() {
   return (
     <>
       <Head />
-
-      <NavBar />
+      <Navbar />
       <ReadingHistory />
       <Footer />
     </>

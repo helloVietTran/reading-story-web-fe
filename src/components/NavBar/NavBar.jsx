@@ -5,10 +5,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faHome, faSort } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 
-import './Navbar.css';
-import Container from '../Layout/Container/Container';
-import SortMenu from '../Menu/SortMenu/SortMenu';
-import GenreMenu from '../Menu/GenreMenu/GenreMenu';
+import Container from '@/components/Layout/Container/Container';
+import SortMenu from '@/components/Menu/SortMenu/SortMenu';
+import GenreMenu from '@/components/Menu/GenreMenu/GenreMenu';
 
 function NavBar({ isPreventFixed }) {
   const darkTheme = useSelector((state) => state.theme.darkTheme);
