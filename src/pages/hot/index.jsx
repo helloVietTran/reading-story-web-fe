@@ -9,7 +9,7 @@ import TopStory from '@/components/TopStory/TopStory';
 import { getHotStories } from '@/api/storyApi';
 import { queryKey } from '@/config/queryKey';
 import SplashScreen from '@/components/SplashScreen/SplashScreen';
-import Navbar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/NavBar/NavBar'; 
 
 function Hot() {
   const [searchParams] = useSearchParams();

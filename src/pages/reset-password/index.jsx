@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import Head from '@/components/Head/Head';
-import Navbar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/NavBar/NavBar'; 
 import Footer from '@/components/Footer/Footer';
 import ResetPassword from '@/components/ResetPassword/ResetPassword';
 

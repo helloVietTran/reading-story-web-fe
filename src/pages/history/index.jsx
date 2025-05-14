@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import Head from '@/components/Head/Head';
-import Navbar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/NavBar/NavBar'; 
 import Footer from '@/components/Footer/Footer';
 import ReadingHistory from '@/components/ReadingHistory/ReadingHistory';
 

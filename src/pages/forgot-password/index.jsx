@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import ForgotPassword from '@/components/ForgotPassword/ForgotPassword';
 import Head from '@/components/Head/Head';
-import Navbar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/NavBar/NavBar'; 
 import Footer from '@/components/Footer/Footer';
 
 const ForgotPasswordPage = () => {

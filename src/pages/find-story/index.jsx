@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import Head from '@/components/Head/Head';
-import Navbar from '@/components/Navbar/Navbar';
+import Navbar from '@/components/NavBar/NavBar'; 
 import Sort from '@/components/Sort/Sort';
 import Category from '@/components/Category/Category';
 import Footer from '@/components/Footer/Footer';
