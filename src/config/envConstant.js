@@ -1,7 +1,6 @@
 export const envConstant = {
   baseUrl:
-    import.meta.env.VITE_BACKEND_URL + import.meta.env.VITE_BACKEND_PREFIX ||
-    'http://localhost:8080/api',
+    'https://v-story-be.onrender.com/api',
   tokenName: import.meta.env.VITE_ACCESS_TOKEN_NAME || 'reading_web_jwt',
   refreshTokenName:
     import.meta.env.VITE_REFRESH_ACCESS_TOKEN_NAME ||
